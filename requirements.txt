@@ -1,0 +1,6 @@
+pillow
+Send2Trash
+pyperclip
+pypinyin
+setuptools
+pyinstaller
