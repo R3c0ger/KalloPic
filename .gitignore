@@ -93,3 +93,4 @@ ENV/
 .vscode/
 .idea/
 *.doc[xm]?
+*.psd
