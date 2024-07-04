@@ -37,8 +37,6 @@ def gen_gradient_textline(textline, start_color=None, end_color=None):
 
 
 def print_gradient_text(text="", enable_print=True):
-    # 打印当前工作目录
-    print(f"Current working directory: {os.getcwd()}")
     text_rst = ""
     for line in text.splitlines():
         line_str = gen_gradient_textline(line)
