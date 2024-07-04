@@ -793,10 +793,7 @@ class ImageViewer:
         self.load_img()
 
     def show_info_canvas(self):
-        width = self.canvas.winfo_width()
-        self.info_canvas.config(width=width)
-        # info_canvas宽度滞后，小于canvas宽度就会消失，修改方法是直接设置宽度
-        print(width, self.info_canvas.winfo_width(), "\n")
+        self.info_canvas.config(width=self.canvas.winfo_width())
         self.info_canvas.delete("all")
         offsets = [(0, 0), (0, 2), (2, 2), (2, 0), (1, 1)]
         fills = ['black', 'black', 'black', 'black', 'white']
@@ -842,6 +839,7 @@ class ImageViewer:
 
     def on_master_move_or_resize(self, _):
         """窗口移动时，移动图片信息窗口、画布上的图片"""
+        # bug: 宽度小于某个值时，图片信息窗口不显示但存在
         if self.img_pil:
             self.draw_img(self.img_pil)
         if self.info_window and self.show_info:
