@@ -4,7 +4,6 @@
 import imghdr
 import os
 import subprocess
-import sys
 import time
 import tkinter as tk
 from functools import partial
@@ -15,7 +14,7 @@ import pyperclip
 import send2trash
 from PIL import Image, ImageTk, ImageOps
 
-from constants import Constants
+from kallopic.constants import Constants
 
 
 # 图片后缀名
@@ -584,8 +583,11 @@ class ImageViewer:
                 tree.insert("", tk.END, values=(help_tuple[0], help_tuple[1]))
 
         # 添加版本信息
-        title = self.master.title().split(" - ")[0]
-        version_label = ttk.Label(self.help_window, text=f"{title} v1.0", anchor="center")
+        version_label = ttk.Label(
+            self.help_window,
+            text=f"{Constants.PROJECT_NAME}{Constants.VERSION}",
+            anchor="center"
+        )
         version_label.pack(pady=10)
 
         self.help_window.protocol("WM_DELETE_WINDOW", self.on_help_window_close)
@@ -958,7 +960,7 @@ if __name__ == '__main__':
     root = tk.Tk()
     root.title(Constants.PROJECT_NAME)
     app = ImageViewer(root)
-    root.geometry(Constants.WIN_SIZE)
+    root.geometry(Constants.DEFAULT_WIN_SIZE)
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     print(os.getcwd())
     root.wm_iconbitmap(Constants.LOGO_ICON_PATH)
