@@ -469,7 +469,7 @@ class ImageViewer:
         """绑定窗口状态事件，控制图片信息窗口的显示与隐藏、位置更改"""
         self.master.bind("<Unmap>", self.on_master_minimize)
         self.master.bind("<Map>", self.on_master_restore)
-        self.master.bind("<Configure>", self.on_master_move)
+        self.master.bind("<Configure>", self.on_master_move_or_resize)  # 同时支持图片跟随
         self.master.bind("<FocusIn>", self.on_master_focus_in)
         self.master.bind("<FocusOut>", self.on_master_focus_out)
 
@@ -480,12 +480,6 @@ class ImageViewer:
         self.canvas.bind("<B1-Motion>", lambda e: self.canvas.scan_dragto(e.x, e.y, gain=1))
         # 鼠标右键菜单
         self.canvas.bind("<Button-3>", self.show_context_menu)
-        # 窗口移动/缩放，图片跟随
-        self.canvas.bind(
-            "<Configure>", lambda event:
-                (self.draw_img(self.img_pil) if self.img_pil else None) or
-                (self.show_info_canvas() if self.show_info else None)
-        )
 
     def bind_shortcuts(self):
         """绑定快捷键"""
@@ -799,9 +793,10 @@ class ImageViewer:
         self.load_img()
 
     def show_info_canvas(self):
-        text_width = (len(self.info_str.split("\n")[0]) + 1) * 12
-        width = min(text_width, self.canvas.winfo_width())
+        width = self.canvas.winfo_width()
         self.info_canvas.config(width=width)
+        # info_canvas宽度滞后，小于canvas宽度就会消失，修改方法是直接设置宽度
+        print(width, self.info_canvas.winfo_width(), "\n")
         self.info_canvas.delete("all")
         offsets = [(0, 0), (0, 2), (2, 2), (2, 0), (1, 1)]
         fills = ['black', 'black', 'black', 'black', 'white']
@@ -845,13 +840,16 @@ class ImageViewer:
         if self.info_window and self.show_info:
             self.info_window.deiconify()
 
-    def on_master_move(self, _):
-        """窗口移动时移动图片信息窗口"""
+    def on_master_move_or_resize(self, _):
+        """窗口移动时，移动图片信息窗口、画布上的图片"""
+        if self.img_pil:
+            self.draw_img(self.img_pil)
         if self.info_window and self.show_info:
-            self.info_window.geometry("+{}+{}".format(
-                self.canvas.winfo_rootx(),
-                self.canvas.winfo_rooty())
+            self.info_window.geometry(
+                f"+{self.canvas.winfo_rootx()}"
+                f"+{self.canvas.winfo_rooty()}"
             )
+            self.show_info_canvas()
 
     def on_master_focus_in(self, _):
         """窗口获得焦点时显示图片信息窗口，使用透明度控制窗口显示"""
