@@ -144,7 +144,7 @@ class ImageViewer:
         self.src_frame.pack(fill=tk.X)
         # 选择按钮，控制是否递归查找
         self.load_recursive = tk.IntVar()
-        self.load_recursive.set(0)
+        self.load_recursive.set(1)
         self.load_checkbutton = ttk.Checkbutton(
             self.src_frame,
             text="Recursive",
@@ -803,29 +803,37 @@ class ImageViewer:
                 text=self.info_str, font=("", 14, "bold"), fill=fill,
             )
 
+    def create_show_info_window(self):
+        # 信息窗口
+        self.info_button.config(text="Hide Info")
+        self.info_window = tk.Toplevel(self.canvas, bg='grey')
+        self.info_window.wm_attributes("-transparentcolor", "grey", "-topmost", True)
+        self.info_window.geometry(f"+{self.canvas.winfo_rootx()}+{self.canvas.winfo_rooty()}")
+        self.info_window.overrideredirect(True)
+        # 信息文本
+        if self.info_canvas:
+            self.info_canvas.destroy()
+        self.info_canvas = tk.Canvas(self.info_window, bg='grey', highlightthickness=0)
+        self.info_canvas.pack(expand=True, fill=tk.BOTH)
+        self.show_info_canvas()
+        # 更改右键菜单
+        self.context_menu.entryconfig(11, label="Hide Info")
+
+    def destroy_show_info_window(self):
+        self.info_button.config(text="Show Info")
+        if self.info_window:
+            self.info_window.destroy()
+            self.info_window = None
+        # 更改右键菜单
+        self.context_menu.entryconfig(11, label="Show Info")
+
     def switch_show_info_window(self):
         """切换是否显示图片信息窗口"""
         self.show_info = not self.show_info
         if self.show_info:
-            # 信息窗口
-            self.info_button.config(text="Hide Info")
-            self.info_window = tk.Toplevel(self.canvas, bg='grey')
-            self.info_window.wm_attributes("-transparentcolor", "grey", "-topmost", True)
-            self.info_window.geometry(f"+{self.canvas.winfo_rootx()}+{self.canvas.winfo_rooty()}")
-            self.info_window.overrideredirect(True)
-            # 信息文本
-            self.info_canvas = tk.Canvas(self.info_window, bg='grey', highlightthickness=0)
-            self.info_canvas.pack(expand=True, fill=tk.BOTH)
-            self.show_info_canvas()
-            # 更改右键菜单
-            self.context_menu.entryconfig(11, label="Hide Info")
+            self.create_show_info_window()
         else:
-            self.info_button.config(text="Show Info")
-            if self.info_window:
-                self.info_window.destroy()
-                self.info_window = None
-            # 更改右键菜单
-            self.context_menu.entryconfig(11, label="Show Info")
+            self.destroy_show_info_window()
 
     def on_master_minimize(self, _):
         """窗口最小化时隐藏图片信息窗口"""
@@ -847,7 +855,7 @@ class ImageViewer:
                 f"+{self.canvas.winfo_rootx()}"
                 f"+{self.canvas.winfo_rooty()}"
             )
-            self.show_info_canvas()
+            self.info_canvas.config(width=self.canvas.winfo_width())
 
     def on_master_focus_in(self, _):
         """窗口获得焦点时显示图片信息窗口，使用透明度控制窗口显示"""
