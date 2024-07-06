@@ -28,7 +28,7 @@ def setup_logger(level=logging.INFO, log_file=None):
             log_relpath = os.path.dirname(log_file)
             if not os.path.exists(log_relpath):
                 os.makedirs(log_relpath)
-            with open(log_file, 'w', encoding='utf-8') as f:
+            with open(log_file, 'a', encoding='utf-8') as f:
                 f.write('')
         except Exception as e:
             raise e
