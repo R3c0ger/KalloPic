@@ -14,7 +14,7 @@ import pyperclip
 import send2trash
 from PIL import Image, ImageTk, ImageOps
 
-from kallopic.constants import Constants
+from src.constants import Constants
 
 
 # 图片后缀名
@@ -966,7 +966,6 @@ if __name__ == '__main__':
     app = ImageViewer(root)
     root.geometry(Constants.DEFAULT_WIN_SIZE)
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    print(os.getcwd())
     root.wm_iconbitmap(Constants.LOGO_ICON_PATH)
     root.minsize(400, 400)
     root.maxsize(1960, 1080)

@@ -5,7 +5,7 @@ import sys
 
 from setuptools import setup
 
-from kallopic.constants import Constants
+from src.constants import Constants
 
 
 if sys.version_info[0] < 3 or sys.version_info[1] < 6:
