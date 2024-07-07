@@ -112,6 +112,8 @@ class ImageViewer:
         self.info_canvas = None  # 显示图片信息文本的画布
         self.info_str = ""  # 图片信息字符串
         self.brief_info_str = ""  # 图片简略信息字符串
+        self.info_canvas_width = [0]
+        self.canvas_width = 0
         # 逻辑控制与其他
         self.error_retry_count = 0  # 加载图片失败重试次数
         self.layout = {}  # 被隐藏控件的布局信息
@@ -791,6 +793,19 @@ class ImageViewer:
         self.img_paths.reverse()
         self.load_img()
 
+    def ensure_info_canvas_display(self):
+        if self.info_window and self.show_info:
+            if self.info_canvas.winfo_width() - self.info_canvas_width[0] == 0 \
+                    and self.canvas.winfo_width() - self.canvas_width != 0 \
+                    and self.show_info:
+                self.create_show_info_window()
+
+            # 存储过去的canvas和info_canvas宽度值，用于比较
+            if len(self.info_canvas_width) > 3:  # 队列，保留5个之前的宽度值
+                self.info_canvas_width.pop(0)
+            self.info_canvas_width.append(self.info_canvas.winfo_width())
+            self.canvas_width = self.canvas.winfo_width()
+
     def show_info_canvas(self):
         self.info_canvas.config(width=self.canvas.winfo_width())
         self.info_canvas.delete("all")
@@ -855,6 +870,7 @@ class ImageViewer:
                 f"+{self.canvas.winfo_rooty()}"
             )
             self.info_canvas.config(width=self.canvas.winfo_width())
+        self.ensure_info_canvas_display()
 
     def on_master_focus_in(self, _):
         """窗口获得焦点时显示图片信息窗口，使用透明度控制窗口显示"""
