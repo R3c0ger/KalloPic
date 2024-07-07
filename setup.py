@@ -5,7 +5,7 @@ import sys
 
 from setuptools import setup
 
-from src.constants import Constants
+from src.config import Conf
 
 
 if sys.version_info[0] < 3 or sys.version_info[1] < 6:
@@ -23,14 +23,14 @@ def read_readme(filename):
 
 
 setup(
-    name=Constants.PROJECT_NAME,
-    version=Constants.VERSION,
-    author=Constants.AUTHOR,
-    description=Constants.DESCRIPTION,
+    name=Conf.PROJECT_NAME,
+    version=Conf.VERSION,
+    author=Conf.AUTHOR,
+    description=Conf.DESCRIPTION,
     long_description=read_readme('README.md'),
     long_description_content_type='text/markdown',
-    url=Constants.URL,
-    packages=[Constants.PROJECT_NAME_LOWER],
+    url=Conf.URL,
+    packages=[Conf.PROJECT_NAME_LOWER],
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
@@ -40,8 +40,8 @@ setup(
     install_requires=read_requirements('requirements.txt'),
     entry_points={
         'console_scripts': [
-            f'{Constants.PROJECT_NAME_LOWER} = '
-            f'{Constants.PROJECT_NAME_LOWER}.main:main'
+            f'{Conf.PROJECT_NAME_LOWER} = '
+            f'{Conf.PROJECT_NAME_LOWER}.main:main'
         ]
     }
 )

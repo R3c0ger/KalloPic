@@ -14,7 +14,7 @@ import pyperclip
 import send2trash
 from PIL import Image, ImageTk, ImageOps
 
-from src.constants import Constants
+from src.config import Conf
 
 
 # 图片后缀名
@@ -962,11 +962,11 @@ class ImageViewer:
 
 if __name__ == '__main__':
     root = tk.Tk()
-    root.title(Constants.PROJECT_NAME)
+    root.title(Conf.PROJECT_NAME)
     app = ImageViewer(root)
-    root.geometry(Constants.DEFAULT_WIN_SIZE)
+    root.geometry(Conf.DEFAULT_WIN_SIZE)
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    root.wm_iconbitmap(Constants.LOGO_ICON_PATH)
+    root.wm_iconbitmap(Conf.LOGO_ICON_PATH)
     root.minsize(400, 400)
     root.maxsize(1960, 1080)
     root.mainloop()
