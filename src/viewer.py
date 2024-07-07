@@ -104,19 +104,21 @@ class ImageViewer:
         self.img_dir = ""  # 源文件夹路径
         self.img_paths = []  # 源文件夹中搜集到的图片列表
         self.current_index = 0  # 源文件夹中的当前图片索引
+        # 图片展示
         self.img_name = None  # 当前图片的文件名
         self.img_pil = None  # 当前图片的PIL.Image对象
+        self.fit_mode = "fc"  # 图片填充模式，默认为适应窗口
+        self.strech_small = False  # 是否拉伸小图
+        self.img_tag = "img"  # 图片标签
+        self.drag_data = {"x": 0, "y": 0}  # 拖动数据
         # 图片信息展示
         self.show_info = False  # 是否显示图片信息
         self.info_str = ""  # 图片信息字符串
         self.brief_info_str = ""  # 图片简略信息字符串
-        self.text_tag = "info_text"
-        self.img_tag = "img"
-        # 逻辑控制与其他
+        self.text_tag = "info_text"  # 文本标签
+        # 其他
         self.error_retry_count = 0  # 加载图片失败重试次数
         self.layout = {}  # 被隐藏控件的布局信息
-        self.fit_mode = "fc"  # 图片填充模式，默认为适应窗口
-        self.strech_small = False  # 是否拉伸小图
         self.help_window = None  # 帮助窗口
 
         # 显示图片
@@ -468,10 +470,23 @@ class ImageViewer:
         # 画布缩放或移动
         self.canvas.bind("<Configure>", self.canvas_move_or_resize)
         # 鼠标拖动图片
-        self.canvas.tag_bind(self.img_tag, "<ButtonPress-1>", lambda e: self.canvas.scan_mark(e.x, e.y))
-        self.canvas.tag_bind(self.img_tag, "<B1-Motion>", lambda e: self.canvas.scan_dragto(e.x, e.y, gain=1))
+        self.canvas.tag_bind(self.img_tag, "<ButtonPress-1>", self.on_image_press)
+        self.canvas.tag_bind(self.img_tag, "<B1-Motion>", self.on_image_drag)
         # 鼠标右键菜单
         self.canvas.bind("<Button-3>", self.show_context_menu)
+
+    def on_image_press(self, event):
+        """记录鼠标点击位置"""
+        self.drag_data["x"] = event.x
+        self.drag_data["y"] = event.y
+
+    def on_image_drag(self, event):
+        """拖动图片"""
+        dx = event.x - self.drag_data["x"]
+        dy = event.y - self.drag_data["y"]
+        self.canvas.move(self.img_tag, dx, dy)
+        self.drag_data["x"] = event.x
+        self.drag_data["y"] = event.y
 
     def bind_shortcuts(self):
         """绑定快捷键"""
