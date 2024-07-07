@@ -20,7 +20,7 @@ class Config:
     # Metadata
     PROJECT_NAME = "KalloPic"
     PROJECT_NAME_LOWER = PROJECT_NAME.lower()
-    VERSION = "0.1.0"
+    VERSION = "0.2.0"
     AUTHOR = "Recogeta"
     DESCRIPTION = "Folder-based picture viewer, filter and archiver."
     URL = 'https://github.com/R3c0ger/KalloPic'
@@ -47,7 +47,6 @@ class DevelopmentConfig(Config):
 
 
 class ProductionConfig(Config):
-    DEFAULT_WIN_SIZE = "1000x400"
     DEBUG = False
     LOG_LEVEL = logging.WARNING
     # LOG_RELPATH = rf"{Config.PROJECT_NAME_LOWER}.log"

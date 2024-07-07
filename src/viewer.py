@@ -108,12 +108,10 @@ class ImageViewer:
         self.img_pil = None  # 当前图片的PIL.Image对象
         # 图片信息展示
         self.show_info = False  # 是否显示图片信息
-        self.info_window = None  # 图片信息窗口
-        self.info_canvas = None  # 显示图片信息文本的画布
         self.info_str = ""  # 图片信息字符串
         self.brief_info_str = ""  # 图片简略信息字符串
-        self.info_canvas_width = [0]
-        self.canvas_width = 0
+        self.text_tag = "info_text"
+        self.img_tag = "img"
         # 逻辑控制与其他
         self.error_retry_count = 0  # 加载图片失败重试次数
         self.layout = {}  # 被隐藏控件的布局信息
@@ -204,7 +202,7 @@ class ImageViewer:
         self.info_button = ttk.Button(
             self.button_frame,
             text="Show Info",
-            command=self.switch_show_info_window,
+            command=self.switch_show_info,
             width=10
         )
         self.info_button.grid(row=0, column=7, padx=10)
@@ -384,7 +382,7 @@ class ImageViewer:
         self.context_menu.add_command(
             label="Show Info",
             accelerator="Tab",
-            command=self.switch_show_info_window
+            command=self.switch_show_info
         )
         self.context_menu.add_command(
             label="Hide Widgets",
@@ -461,24 +459,17 @@ class ImageViewer:
     # 预执行的方法
     def pre_execute(self):
         """预执行的绑定事件"""
-        self.bind_events_about_infowin()
         self.bind_events_about_canvas()
         self.bind_shortcuts()
         self.bind_help_tips()
 
-    def bind_events_about_infowin(self):
-        """绑定窗口状态事件，控制图片信息窗口的显示与隐藏、位置更改"""
-        self.master.bind("<Unmap>", self.on_master_minimize)
-        self.master.bind("<Map>", self.on_master_restore)
-        self.master.bind("<Configure>", self.on_master_move_or_resize)  # 同时支持图片跟随
-        self.master.bind("<FocusIn>", self.on_master_focus_in)
-        self.master.bind("<FocusOut>", self.on_master_focus_out)
-
     def bind_events_about_canvas(self):
         """绑定画布事件"""
+        # 画布缩放或移动
+        self.canvas.bind("<Configure>", self.canvas_move_or_resize)
         # 鼠标拖动图片
-        self.canvas.bind("<ButtonPress-1>", lambda e: self.canvas.scan_mark(e.x, e.y))
-        self.canvas.bind("<B1-Motion>", lambda e: self.canvas.scan_dragto(e.x, e.y, gain=1))
+        self.canvas.tag_bind(self.img_tag, "<ButtonPress-1>", lambda e: self.canvas.scan_mark(e.x, e.y))
+        self.canvas.tag_bind(self.img_tag, "<B1-Motion>", lambda e: self.canvas.scan_dragto(e.x, e.y, gain=1))
         # 鼠标右键菜单
         self.canvas.bind("<Button-3>", self.show_context_menu)
 
@@ -489,7 +480,7 @@ class ImageViewer:
         self.master.bind("<Home>", lambda event: self.show_first_img())
         self.master.bind("<End>", lambda event: self.show_last_img())
         self.master.bind("<Delete>", lambda event: self.delete_img())
-        self.master.bind("<Tab>", lambda event: self.switch_show_info_window())
+        self.master.bind("<Tab>", lambda event: self.switch_show_info())
         self.master.bind("<Control-c>", lambda event: pyperclip.copy(self.img_name))
         self.master.bind("<Control-Shift-C>", lambda event: pyperclip.copy(os.path.abspath(self.img_name)))
         self.master.bind("<Control-y>", lambda event: pyperclip.copy(self.info_str))
@@ -658,23 +649,24 @@ class ImageViewer:
             return img
 
     def draw_img(self, img):
-        """在画布上绘制图片"""
+        """在画布上绘制图片，同时绘制图片信息文本"""
         # 根据图片显示模式调整图片大小，保存在属性中
         img = self.resize_img(img, self.fit_mode, self.strech_small)
         self.img_in_canvas = ImageTk.PhotoImage(img)
-        # 清除已有图片
+        # 清除已有图片和文本
         self.canvas.delete(tk.ALL)
         # 绘制新图片，居中显示
         canvas_w, canvas_h = self.canvas.winfo_width(), self.canvas.winfo_height()
-        # img_w, img_h = img.size
-        # x0 = (canvas_w - img_w) // 2
-        # y0 = (canvas_h - img_h) // 2
-        self.canvas.create_image(canvas_w // 2, canvas_h // 2, image=self.img_in_canvas)
+        self.canvas.create_image(
+            canvas_w // 2, canvas_h // 2,
+            image=self.img_in_canvas,
+            tags=self.img_tag
+        )
         # 复位canvas视图
         self.canvas.xview_moveto(0)
         self.canvas.yview_moveto(0)
-        # # 设置scrollregion，使得拖拽范围限定在图片的范围内
-        # self.canvas.config(scrollregion=(x0, y0, x0 + img_w, y0 + img_h))
+        if self.show_info:
+            self.show_info_text()
 
     def handle_image_error(self, e, to_next=True):
         """处理图片加载错误"""
@@ -708,16 +700,14 @@ class ImageViewer:
         self.img_pil = img  # 存储PIL.Image对象
         self.img_name = img_relpath
         self.error_retry_count = 0  # 成功加载图片后，重置错误计数
-        # 在canvas中绘制图片
+        # 获取图片信息备用，如需要显示信息就显示
+        self.info_str, self.brief_info_str = get_exif_data(img_relpath, self.img_pil)
+        # 在canvas中绘制图片（，并展示图片信息）
         self.draw_img(self.img_pil)
         # 更新窗口标题、状态栏
         rate_str = f"{self.current_index + 1}/{len(self.img_paths)}"
         self.status_bar.config(text=f"Image {rate_str}: {img_relpath}")
         self.master.title(f"{self.root_title} - {self.img_dir} - {img_relpath} [{rate_str}]")
-        # 获取图片信息备用，如需要显示信息就显示
-        self.info_str, self.brief_info_str = get_exif_data(img_relpath, self.img_pil)
-        if self.show_info:
-            self.show_info_canvas()
         # self.print_check()
 
     def print_check(self):
@@ -793,93 +783,35 @@ class ImageViewer:
         self.img_paths.reverse()
         self.load_img()
 
-    def ensure_info_canvas_display(self):
-        if self.info_window and self.show_info:
-            if self.info_canvas.winfo_width() - self.info_canvas_width[0] == 0 \
-                    and self.canvas.winfo_width() - self.canvas_width != 0 \
-                    and self.show_info:
-                self.create_show_info_window()
-
-            # 存储过去的canvas和info_canvas宽度值，用于比较
-            if len(self.info_canvas_width) > 3:  # 队列，保留5个之前的宽度值
-                self.info_canvas_width.pop(0)
-            self.info_canvas_width.append(self.info_canvas.winfo_width())
-            self.canvas_width = self.canvas.winfo_width()
-
-    def show_info_canvas(self):
-        self.info_canvas.config(width=self.canvas.winfo_width())
-        self.info_canvas.delete("all")
+    def show_info_text(self):
+        self.canvas.delete(self.text_tag)
         offsets = [(0, 0), (0, 2), (2, 2), (2, 0), (1, 1)]
         fills = ['black', 'black', 'black', 'black', 'white']
         for offset, fill in zip(offsets, fills):
-            self.info_canvas.create_text(
+            self.canvas.create_text(
                 offset[0], offset[1], anchor='nw',
                 text=self.info_str, font=("", 14, "bold"), fill=fill,
+                tags=self.text_tag
             )
 
-    def create_show_info_window(self):
-        # 信息窗口
-        self.info_button.config(text="Hide Info")
-        self.info_window = tk.Toplevel(self.canvas, bg='grey')
-        self.info_window.wm_attributes("-transparentcolor", "grey", "-topmost", True)
-        self.info_window.geometry(f"+{self.canvas.winfo_rootx()}+{self.canvas.winfo_rooty()}")
-        self.info_window.overrideredirect(True)
-        # 信息文本
-        if self.info_canvas:
-            self.info_canvas.destroy()
-        self.info_canvas = tk.Canvas(self.info_window, bg='grey', highlightthickness=0)
-        self.info_canvas.pack(expand=True, fill=tk.BOTH)
-        self.show_info_canvas()
-        # 更改右键菜单
-        self.context_menu.entryconfig(11, label="Hide Info")
-
-    def destroy_show_info_window(self):
-        self.info_button.config(text="Show Info")
-        if self.info_window:
-            self.info_window.destroy()
-            self.info_window = None
-        # 更改右键菜单
-        self.context_menu.entryconfig(11, label="Show Info")
-
-    def switch_show_info_window(self):
-        """切换是否显示图片信息窗口"""
+    def switch_show_info(self):
+        """切换是否显示图片信息"""
         self.show_info = not self.show_info
         if self.show_info:
-            self.create_show_info_window()
+            self.show_info_text()
+            # 更改按钮和右键菜单文字
+            self.info_button.config(text="Hide Info")
+            self.context_menu.entryconfig(11, label="Hide Info")
         else:
-            self.destroy_show_info_window()
+            self.canvas.delete(self.text_tag)
+            # 更改按钮和右键菜单文字
+            self.info_button.config(text="Show Info")
+            self.context_menu.entryconfig(11, label="Show Info")
 
-    def on_master_minimize(self, _):
-        """窗口最小化时隐藏图片信息窗口"""
-        if self.info_window and self.show_info:
-            self.info_window.withdraw()
-
-    def on_master_restore(self, _):
-        """窗口恢复时显示图片信息窗口"""
-        if self.info_window and self.show_info:
-            self.info_window.deiconify()
-
-    def on_master_move_or_resize(self, _):
-        """窗口移动时，移动图片信息窗口、画布上的图片"""
-        # bug: 宽度小于某个值时，图片信息窗口不显示但存在
+    def canvas_move_or_resize(self, _):
+        """窗口移动时，移动画布上的图片与图片信息"""
         if self.img_pil:
             self.draw_img(self.img_pil)
-        if self.info_window and self.show_info:
-            self.info_window.geometry(
-                f"+{self.canvas.winfo_rootx()}"
-                f"+{self.canvas.winfo_rooty()}"
-            )
-            self.info_canvas.config(width=self.canvas.winfo_width())
-        self.ensure_info_canvas_display()
-
-    def on_master_focus_in(self, _):
-        """窗口获得焦点时显示图片信息窗口，使用透明度控制窗口显示"""
-        if self.info_window:
-            self.info_window.attributes('-alpha', 1)
-
-    def on_master_focus_out(self, _):
-        if self.info_window:
-            self.info_window.attributes('-alpha', 0)
 
     def hide_widgets(self):
         """隐藏所有控件"""
@@ -893,10 +825,6 @@ class ImageViewer:
                 widget.pack_forget()
         # 修改右键菜单中的名称和命令
         self.context_menu.entryconfig(12, label="Show Widgets", command=self.show_widgets)
-        # 解决隐藏组件同时，隐藏了图片信息的问题
-        if self.show_info:
-            self.show_info = not self.show_info
-            self.switch_show_info_window()
 
     def show_widgets(self):
         """显示所有控件"""
