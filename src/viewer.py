@@ -80,21 +80,19 @@ def get_exif_data(img_relpath, img_pil):
         f"{round(img_size / 1024, 3)} KB" if img_size < 1024 ** 2 else \
         f"{round(img_size / 1024 ** 2, 3)} MB" if img_size < 1024 ** 3 else \
         f"{round(img_size / 1024 ** 3, 3)} GB"
-    img_size_str = f"{img_size_str} ({img_size} bytes)" if img_size >= 1024 else img_size_str
+    img_size_str = f"{img_size_str}" if img_size >= 1024 else img_size_str
     last_modified_ts = time.localtime(os.path.getmtime(img_relpath))
     last_modified = time.strftime('%Y-%m-%d %H:%M:%S', last_modified_ts)
-    data_dict = {
-        "filename": img_relpath,
-        "filesize": img_size_str,
-        "last_modified": last_modified,
-        "filetype": imghdr.what(img_relpath),
-        "resolution": f"{img_pil.size[0]} x {img_pil.size[1]}",
-    }
-    # 将数据字典转为用于打印的字符串
-    data_str = ""
-    for key, value in data_dict.items():
-        data_str += f"{key}: {value}\n"
-    return data_str[:-1]
+    filetype = imghdr.what(img_relpath)
+    data_str = (
+        f"filename: {img_relpath}\n"
+        f"filesize: {img_size_str}\n"
+        f"last modified: {last_modified}\n"
+        f"filetype: {filetype}\n"
+        f"resolution: {img_pil.size[0]} x {img_pil.size[1]}"
+    )
+    brief_data_str = f"{img_size_str}, {filetype}, {img_pil.size[0]} x {img_pil.size[1]}"
+    return data_str[:-1], brief_data_str
 
 
 class ImageViewer:
@@ -113,6 +111,7 @@ class ImageViewer:
         self.info_window = None  # 图片信息窗口
         self.info_canvas = None  # 显示图片信息文本的画布
         self.info_str = ""  # 图片信息字符串
+        self.brief_info_str = ""  # 图片简略信息字符串
         # 逻辑控制与其他
         self.error_retry_count = 0  # 加载图片失败重试次数
         self.layout = {}  # 被隐藏控件的布局信息
@@ -579,7 +578,7 @@ class ImageViewer:
         # 添加版本信息
         version_label = ttk.Label(
             self.help_window,
-            text=f"{Constants.PROJECT_NAME}{Constants.VERSION}",
+            text=f"{Conf.PROJECT_NAME}{Conf.VERSION}",
             anchor="center"
         )
         version_label.pack(pady=10)
@@ -714,7 +713,7 @@ class ImageViewer:
         self.status_bar.config(text=f"Image {rate_str}: {img_relpath}")
         self.master.title(f"{self.root_title} - {self.img_dir} - {img_relpath} [{rate_str}]")
         # 获取图片信息备用，如需要显示信息就显示
-        self.info_str = get_exif_data(img_relpath, self.img_pil)
+        self.info_str, self.brief_info_str = get_exif_data(img_relpath, self.img_pil)
         if self.show_info:
             self.show_info_canvas()
         # self.print_check()
@@ -726,7 +725,7 @@ class ImageViewer:
             f"Current Index: {self.current_index}\n" + \
             f"Image Name: {self.img_name}\n" + \
             f"Show Info: {self.show_info}\n" + \
-            f"Info Str: {self.info_str}\n" + \
+            f"Info: {self.brief_info_str}\n" + \
             f"Error Retry Count: {self.error_retry_count}\n" + \
             f"Fit Mode: {self.fit_mode}\n" + \
             f"Strech Small: {self.strech_small}\n"
