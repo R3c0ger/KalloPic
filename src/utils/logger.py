@@ -3,12 +3,19 @@
 
 import logging
 import os
+import warnings
 from logging.handlers import RotatingFileHandler
 
 
 def setup_logger(level=logging.INFO, log_file=None):
     logger = logging.getLogger('appLogger')
     logger.setLevel(level)
+
+    # 捕获警告
+    def warning_to_log(message, category, filename, lineno, file=None, line=None):
+        logger.warning(f'{filename}:{lineno}: {category.__name__}: {message}')
+
+    warnings.showwarning = warning_to_log
 
     # 创建输出到控制台的handler
     console_handler = logging.StreamHandler()
@@ -23,15 +30,14 @@ def setup_logger(level=logging.INFO, log_file=None):
     # 如果不需要写入文件，直接返回logger；否则创建文件
     if not log_file:
         return logger
-    else:
-        try:
-            log_relpath = os.path.dirname(log_file)
-            if not os.path.exists(log_relpath):
-                os.makedirs(log_relpath)
-            with open(log_file, 'a', encoding='utf-8') as f:
-                f.write('')
-        except Exception as e:
-            raise e
+    try:
+        log_relpath = os.path.dirname(log_file)
+        if not os.path.exists(log_relpath):
+            os.makedirs(log_relpath)
+        with open(log_file, 'a', encoding='utf-8') as f:
+            f.write('')
+    except Exception as e:
+        raise e
 
     # 创建输出到文件的handler
     file_handler = RotatingFileHandler(log_file, maxBytes=1048576, backupCount=5)
