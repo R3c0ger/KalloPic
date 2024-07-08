@@ -492,6 +492,13 @@ class ImageViewer:
         """绑定快捷键"""
         self.master.bind("<Left>", lambda event: self.show_prev_img())
         self.master.bind("<Right>", lambda event: self.show_next_img())
+        self.master.bind("<Up>", lambda event: self.show_prev_img())
+        self.master.bind("<Down>", lambda event: self.show_next_img())
+        self.canvas.bind(
+            "<MouseWheel>",
+            lambda event: self.show_prev_img() if event.delta > 0
+            else self.show_next_img()
+        )
         self.master.bind("<Home>", lambda event: self.show_first_img())
         self.master.bind("<End>", lambda event: self.show_last_img())
         self.master.bind("<Delete>", lambda event: self.delete_img())
@@ -516,11 +523,12 @@ class ImageViewer:
             self.master.iconify() or self.master.attributes("-fullscreen", False)
         )
         self.master.bind("<F11>", lambda event: self.fullscreen_restore())
-        # ctrl+f聚焦在跳转输入框，ctrl+g跳转到指定图片
+        # 聚焦在跳转输入框
         self.master.bind("<Control-f>", lambda event: (
             self.goto_entry.focus(), self.goto_entry.select_range(0, tk.END)))
+        # 跳转到指定图片
         self.master.bind("<Control-g>", lambda event: self.goto_button.invoke())
-        # Ctrl+h隐藏/显示控件
+        # 隐藏/显示控件
         self.master.bind(
             "<Control-h>", lambda event: self.show_widgets()
             if not self.hide_button.winfo_ismapped()
