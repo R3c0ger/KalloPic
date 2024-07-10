@@ -18,13 +18,8 @@ from src.config import Conf
 
 
 # 图片后缀名
-ImgSuffixes = (
-    '.jpeg', '.JPEG',
-    '.jpg', '.JPG',
-    '.png', '.PNG',
-    '.bmp', '.BMP',
-    '.webp', '.WEBP',
-)
+ImgSuffixes = Conf.IMG_SUFFIX
+
 # 图片适应模式，每个模式分别包含：程序内名称缩写字符串、英文全称、快捷键
 # 拉伸小图不算在内，是布尔值
 ImageFitModes = [

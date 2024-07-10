@@ -38,6 +38,13 @@ class Config:
     LOGO_ICON_RELPATH = "resources/logo/logo.ico"
     LOGO_ICON_PATH = get_resource_path(LOGO_ICON_RELPATH)
     DEFAULT_WIN_SIZE = "500x400"
+    IMG_SUFFIX = (
+        '.jpeg', '.JPEG',
+        '.jpg', '.JPG',
+        '.png', '.PNG',
+        '.bmp', '.BMP',
+        '.webp', '.WEBP',
+    )
 
 
 class DevelopmentConfig(Config):
