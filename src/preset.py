@@ -800,4 +800,201 @@ DIR_KEYWORD_MAP = {
         "nippaku", "zanmu",
         "brcw",
     ],
+    "朱鹭子": [
+        129,
+        "zhuluzi", "zlz",
+        "unnamed", "book", "reading", "youkai", "tokiko",
+        "dsyg", "wuming", "dushu", "zl",
+    ],
+    "冈崎梦美": [
+        130,
+        "gangqi", "mengmei", "gqmm", "gq", "mm",
+        "yumemi", "okazaki",
+        "jiaoshou", "js", "caomei", "cm", "jzstw",
+    ],
+    "北白河千百合": [
+        131,
+        "beibaihe", "qianbaihe", "bbhqbh", "bbh", "qbh",
+        "chiyuri", "kitashirakawa",
+        "zdkm", "zdjsz",
+    ],
+    "卡娜·安娜贝拉尔": [
+        132,
+        "kana", "annabeilaer", "knanble", "kn", "anble",
+        "anaberal",
+        "mxs", "lpn", "bjsn", "anklnn",
+    ],
+    "奥莲姬": [
+        133,
+        "aolianji", "alj",
+        "orange",
+        "chengzi", "cz", "juzi", "jz",
+    ],
+    "小兔姬": [
+        134,
+        "xiaotuji", "xtj", "xt",
+        "kotohime",
+        "jingcha", "jc",
+    ],
+    "梦月": [
+        135,
+        "mengyue",
+        "mugetsu",
+    ],
+    "幻月": [
+        136,
+        "huanyue",
+        "gengetsu",
+    ],
+    "幽香（旧作）": [
+        137,
+        "youxiang", "yx",
+        "yuka",
+        "smr", "jzstw",
+    ],
+    "明罗": [
+        138,
+        "mingluo",
+        "meira",
+    ],
+    "朝仓理香子": [
+        139,
+        "zhaocang", "lixiangzi", "zclxz", "zc", "lxz", "cc", "cclxz",
+        "rikako", "asakura",
+    ],
+    "爱莲": [
+        140,
+        "ailian", "al",
+        "ellen",
+        "lamn", "ailun", "pst", "ps",
+    ],
+    "胡桃": [
+        141,
+        "hutao", "ht",
+        "kurumi",
+        "xxg", "vampire",
+    ],
+    "艾丽": [
+        142,
+        "aili", "al",
+        "elly",
+        "menwei", "mw",
+    ],
+    "里香": [
+        143,
+        "lixiang", "lx",
+        "rika",
+        "zhanche", "zc", "zcsn",
+    ],
+    "依莉斯": [
+        144,
+        "yilisi", "yls",
+        "elis",
+    ],
+    "冴月麟": [
+        145,
+        "huyuelin", "hyl", "yyl",
+        "satsuki", "rin",
+        "akl",
+    ],
+    "宫出口瑞灵": [
+        146,
+        "gongchukou", "ruiling", "gckrl", "gck", "rl",
+        "miyadeguchi", "mizuchi",
+        "fanyuwang", "fyw",
+    ],
+    "幽幻魔眼": [
+        147,
+        "youhuanmoyan", "yhmy", "yh", "youxuanmoyan", "yxmy", "yx",
+        "yuugenmagan",
+    ],
+    "梦子": [
+        148,
+        "mengzi", "mz",
+        "yumeko",
+        "mjnp",
+    ],
+    "爱丽丝（旧作）": [
+        149,
+        "ailisi", "als",
+        "alice",
+        "lls", "xxa",
+    ],
+    "留琴": [
+        150,
+        "liuqin", "lq",
+        "rukoto", "rkt",
+        "hnnp", "h",
+    ],
+    "矜羯罗": [
+        151,
+        "jinjieluo", "jjl",
+        "konngara",
+    ],
+    "神玉": [
+        152,
+        "shenyu", "sy"
+        "singyoku",
+    ],
+    "神绮": [
+        153,
+        "shenqi", "sq",
+        "shinki",
+        "taitai", "tt", "dms", "neg", "jzstw",
+    ],
+    "舞": [
+        154,
+        "wu", "w",
+        "mai",
+        "bzmfs",
+    ],
+    "菊理": [
+        155,
+        "juli", "jl",
+        "kikuri",
+    ],
+    "萨丽爱尔": [
+        156,
+        "saliaier", "slae",
+        "sariel",
+        "dsg",
+    ],
+    "萨拉": [
+        157,
+        "sala",
+        "sara",
+    ],
+    "蕾拉·普莉兹姆利巴": [
+        158,
+        "leila", "pulizimuliba", "ll", "plzmlb",
+        "leira", "prismriver",
+        "ljh", "sl",
+    ],
+    "雪": [
+        159,
+        "xue", "x",
+        "yuki",
+        "hzmfs",
+    ],
+    "露易兹": [
+        160,
+        "luyizi", "lyz",
+        "luize",
+    ],
+    "其他": [
+        161,
+        "qt", "qita",
+    ],
+    "旧作": [
+        162,
+        "jiuzuo", "heilishi", "jz", "hls", "qt",
+    ],
+    "同人二创": [
+        163,
+        "tongren", "erchuang", "trec", "tr", "ec", "qt",
+    ],
+    "cosplay": [
+        164,
+        "cosplay", "cos", "qt", "cp",
+    ]
 }
