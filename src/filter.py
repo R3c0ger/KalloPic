@@ -1,9 +1,17 @@
 #!usr/bin/env python
 # -*- coding: utf-8 -*-
+
+import errno
+import itertools
 import math
 import os
+import shutil
+import string
 import tkinter as tk
+from time import strftime, localtime
 from tkinter import ttk, messagebox
+
+from send2trash import send2trash
 
 from src.config import Conf
 
@@ -83,9 +91,12 @@ class Filter:
                   "excluding those in the delete folder.")
         )
         self.note_label.pack(padx=5, pady=5, anchor=tk.CENTER)
+
         # 获取所有支持的图片的路径
         self.all_img_list = self.collect_img()
         print(self.all_img_list)
+        self.remove2newdir_in_batches(self.all_img_list)
+        #
 
     def check_dir(self):
         print("Directory:", self.dir_abspath)
@@ -164,7 +175,11 @@ class Filter:
         return rst_str
 
     def collect_img(self):
-        """收集图片。返回图片列表，包含所有图片的相对于target的路径"""
+        """
+        收集图片。返回图片列表，包含所有图片的相对于target的路径
+
+        :return: 图片列表, list
+        """
         source_dir = self.dir_abspath
         os.chdir(self.dir_abspath)  # 将工作目录切换到源文件夹
 
@@ -178,6 +193,32 @@ class Filter:
             for file in files:
                 if os.path.splitext(file)[1] in Conf.IMG_SUFFIX:
                     img_list.append(
-                        os.path.relpath(str(os.path.join(root, file)), self.dir_abspath)
+                        os.path.relpath(
+                            str(os.path.join(root, file)),
+                            self.dir_abspath
+                        )
                     )
         return img_list
+
+    @staticmethod
+    def remove2trash(file_list):
+        """将输入的文件列表中的所有文件移动到回收站"""
+        send2trash(file_list)
+        print(f"The following files have been moved to the recycle bin.")
+        for file in file_list:
+            print(file)
+
+    @staticmethod
+    def remove2newdir(file_list, delete_dir="$$DELETE"):
+        """将输入的文件列表中的所有文件移动到指定的特殊文件夹"""
+        # 检查并创建指定文件夹
+        if not os.path.exists(delete_dir) and len(file_list) > 0:
+            os.makedirs(delete_dir)
+        # 移动到指定文件夹
+        for file in file_list:
+            # 检查文件是否存在
+            if not os.path.exists(file):
+                raise FileNotFoundError(errno.ENOENT, f"File not found: {file}")
+            file_fullname = os.path.basename(file)
+            shutil.move(file, os.path.join(delete_dir, file_fullname))
+            print(f"File {file} moved to {delete_dir}.")
