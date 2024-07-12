@@ -197,6 +197,37 @@ class Filter:
                     )
         return img_list
 
+    def extract_img(self, dest_abspath=None, source_abspath=None):
+        """将原目录下的所有图片移动到目的目录"""
+        # 默认原目录和目的目录均为当前目录
+        if source_abspath is None:
+            source_abspath = self.dir_abspath
+        if dest_abspath is None:
+            dest_abspath = self.dir_abspath
+        if not os.path.isdir(dest_abspath) or not os.path.isdir(source_abspath):
+            raise ValueError("Invalid source or destination directory.")
+        print(f"\nMoving images from {source_abspath} to {dest_abspath}...")
+
+        for img in self.all_img_list:
+            source = os.path.join(source_abspath, img)
+            img_name = img.split('\\')[-1]
+            dest = os.path.join(dest_abspath, img_name)
+            shutil.move(source, dest)
+            print(f"Moved {img_name} to {dest}.")
+
+    def clean_empty_dirs(self):
+        """清理空文件夹"""
+        if not os.path.exists(self.dir_abspath):
+            print(f"Directory not found: {self.dir_abspath}")
+            return
+        empty_dir_list = []
+        for root, dirs, files in os.walk(self.dir_abspath, topdown=False):
+            if not dirs and not files:
+                print(f"{root} is an empty directory.")
+                empty_dir_list.append(root)
+        send2trash(empty_dir_list)
+        print(f"Removed {len(empty_dir_list)} empty directories.")
+
     @staticmethod
     def remove2trash(file_list):
         """将输入的文件列表中的所有文件移动到回收站"""
