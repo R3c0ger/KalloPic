@@ -215,6 +215,18 @@ class Filter:
             shutil.move(source, dest)
             print(f"Moved {img_name} to {dest}.")
 
+    def count_img_in_dir(self):
+        """显示当前文件夹下，所有文件夹中有图片的文件夹的图片数量，按降序排序打印"""
+        img_num_dict = {}
+        for root, dirs, files in os.walk(self.dir_abspath):
+            img_num = len([f for f in files if os.path.splitext(f)[1] in Conf.IMG_SUFFIX])
+            if img_num:
+                img_num_dict[root] = img_num
+        img_num_dict = dict(sorted(img_num_dict.items(), key=lambda x: x[1], reverse=True))
+        for k, v in img_num_dict.items():
+            relative_path = os.path.relpath(k, self.dir_abspath)
+            print(f"{relative_path}: {v} images.")
+
     def clean_empty_dirs(self):
         """清理空文件夹"""
         if not os.path.exists(self.dir_abspath):
