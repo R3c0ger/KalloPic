@@ -94,9 +94,6 @@ class Filter:
 
         # 获取所有支持的图片的路径
         self.all_img_list = self.collect_img()
-        print(self.all_img_list)
-        self.remove2newdir_in_batches(self.all_img_list)
-        #
 
     def check_dir(self):
         print("Directory:", self.dir_abspath)
@@ -222,3 +219,38 @@ class Filter:
             file_fullname = os.path.basename(file)
             shutil.move(file, os.path.join(delete_dir, file_fullname))
             print(f"File {file} moved to {delete_dir}.")
+
+    @staticmethod
+    def remove2newdir_in_batches(file_sets, delete_dir="$$DELETE"):
+        """将文件移动到新文件夹，分批次移动文件，为每个批次创建一个文件夹"""
+        # 检查并创建指定文件夹
+        if not os.path.exists(delete_dir) and len(file_sets) > 0:
+            os.makedirs(delete_dir)
+
+        # 为每个文件夹生成不同的名称，形如aa,ab,ac...az,ba,bb...
+        char = string.ascii_lowercase
+        power = math.ceil(math.log(len(file_sets), len(char)))
+        name_iter = itertools.product(char, repeat=power)
+        # 生成一个时间戳字符串作为每个文件夹名的前缀，防止重名
+        stamp_num = int(strftime("%Y%m%d%H%M%S", localtime())[2:])
+        # 对stamp_num进行base62，以缩小文件名长度
+        charset = string.digits + string.ascii_letters
+        prefix = ""
+        while stamp_num:
+            stamp_num, remainder = divmod(stamp_num, 62)
+            prefix += charset[remainder]
+        print(prefix)
+
+        # 使用生成器生成文件夹名，创建并移动文件
+        dirname_iter = (''.join(chars) for chars in name_iter)
+        for file_set in file_sets:
+            dirname = prefix + "_" + next(dirname_iter)
+            new_path = os.path.join(delete_dir, dirname)
+            if not os.path.exists(new_path):
+                os.makedirs(new_path)
+            for file in file_set:
+                try:
+                    shutil.move(file, os.path.join(new_path))
+                    print(f"Move {file} to {new_path}.")
+                except FileNotFoundError:
+                    print(f"{file} not found.")
