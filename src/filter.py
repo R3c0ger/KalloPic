@@ -9,7 +9,7 @@ import shutil
 import string
 import tkinter as tk
 from time import strftime, localtime
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
 
 from send2trash import send2trash
 
@@ -31,16 +31,18 @@ class Filter:
     def __init__(self, master, dir_abspath, logger=None):
         self.master = master
         self.dir_abspath = dir_abspath
-        self.safety = self.check_dir()  # 检查目录是否存在
+        self.safety = self._check_dir()  # 检查目录是否存在
         if not self.safety:
             self.master.destroy()
             return
+        # 默认值
+        self.delete_dir = "$$DELETE"
+        self.delete_mode_list = ["trash", "extract"]
 
         # 初始化过滤器配置
         self.dir_conf = FilterConfig()
         self.delete_dir_abspath = os.path.join(self.dir_abspath, self.dir_conf.delete_dir)
         print(self.dir_conf, "\n\t", self.delete_dir_abspath)
-
         # 初始化窗口
         self.title = "Filter"
         self.master.title(f"{self.title} - {self.dir_abspath}")
@@ -48,54 +50,107 @@ class Filter:
         self.master.resizable(False, False)
 
         # 统计信息
-        self.file_stat = self.count_files()
+        self.file_stat = self._count_files()
         self.stat_group = ttk.LabelFrame(
             master,
-            text="Statistics of files in current folder (close and open again to refresh)"
+            text="File statistics of current folder (close and open again to refresh)"
         )
-        self.stat_group.pack(anchor=tk.N, padx=5, pady=5, expand=1, fill=tk.X)
+        self.stat_group.pack(side=tk.TOP, padx=5, pady=5, expand=0, fill=tk.X)
         self.firstline_frame = ttk.Frame(self.stat_group)
         self.firstline_frame.pack(anchor=tk.W, fill=tk.X, expand=1)
         # 所有文件统计信息标签
-        self.count_files_label = ttk.Label(
-            self.firstline_frame, text="All files statistics:"
-        )
-        self.count_files_label.pack(side=tk.LEFT, padx=5, pady=5,)
+        self.count_files_label = ttk.Label(self.firstline_frame, text="All files statistics:")
+        self.count_files_label.pack(side=tk.LEFT, padx=5)
         # 打开文件夹
         self.open_dir_button = ttk.Button(
             self.firstline_frame, text="Open the folder",
             command=self.open_dir, width=20
         )
-        self.open_dir_button.pack(side=tk.RIGHT, padx=5, pady=5)
+        self.open_dir_button.pack(side=tk.RIGHT, padx=5)
         # 所有文件统计信息文本框
-        self.count_files_rst = tk.Text(self.stat_group, height=4)
+        self.count_files_rst = tk.Text(self.stat_group, height=3)
         self.count_files_rst.pack(padx=5, pady=5, expand=1, fill=tk.X)
         self.count_files_rst.insert(tk.END, self.file_stat[0])
         self.count_files_rst.config(state=tk.DISABLED, wrap=tk.NONE, relief=tk.FLAT)
         # 图片统计信息标签
-        self.count_imgs_label = ttk.Label(
-            self.stat_group, text="Image files statistics:"
-        )
-        self.count_imgs_label.pack(padx=5, pady=5, anchor=tk.W)
+        self.count_imgs_label = ttk.Label(self.stat_group, text="Image files statistics:")
+        self.count_imgs_label.pack(padx=5, anchor=tk.W)
         # 图片统计信息文本框
         self.count_imgs_rst = tk.Text(self.stat_group, height=1)
         self.count_imgs_rst.pack(padx=5, pady=5, expand=1, fill=tk.X)
-        self.count_imgs_rst.insert(tk.END, self.get_img_stat())
+        self.count_imgs_rst.insert(tk.END, self._get_img_stat())
         self.count_imgs_rst.config(state=tk.DISABLED, wrap=tk.NONE, relief=tk.FLAT)
 
+        # 过滤功能组件，三栏，最左边一栏为功能按钮，中间一栏为功能参数配置，最右边一栏为输出结果文本框
+        self.filter_group = ttk.LabelFrame(master, text="Filter functions")
+        self.filter_group.pack(side=tk.TOP, padx=5, pady=5, expand=1, fill=tk.BOTH)
         # 附注，注明接下来下面给出的所有功能，所筛选的图片都不包括/delete_dir中的图片
         self.note_label = ttk.Label(
-            master,
-            text=("p.s. All the functions above are based"
-                  " on the images in the source folder, "
-                  "excluding those in the delete folder.")
+            self.filter_group,
+            text=("p.s. The functions below are based on all the images found "
+                  "recursively in the source folder, excluding those in the delete folder.")
         )
-        self.note_label.pack(padx=5, pady=5, anchor=tk.CENTER)
+        self.note_label.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        # 功能按钮栏
+        self.func_frame = ttk.Frame(self.filter_group)
+        self.func_frame.pack(side=tk.LEFT, anchor=tk.N, expand=0, fill=tk.Y)
+        # 参数配置栏
+        self.param_frame = ttk.Frame(self.filter_group)
+        self.param_frame.pack(side=tk.LEFT, anchor=tk.N, expand=0, fill=tk.Y)
+        # 输出结果框
+        self.result_box = tk.Text(self.filter_group)
+        self.result_box.pack(side=tk.RIGHT, anchor=tk.N, expand=1, fill=tk.BOTH)
+        self.result_box.insert(tk.END, "Response will be shown here.")
+        self.result_box.config(relief=tk.SUNKEN)
+
+        # 通用参数配置选项
+        # 删除模式
+        self.delete_mode_var = tk.StringVar()
+        self.delete_mode_var.set(self.delete_mode_list[1])
+        self.delete_mode_label = ttk.Label(self.param_frame, text="Delete mode:")
+        self.delete_mode_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.delete_mode_trash = ttk.Radiobutton(
+            self.param_frame, text="Move to recycle bin",
+            variable=self.delete_mode_var, value="trash"
+        )
+        self.delete_mode_trash.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.delete_mode_extract = ttk.Radiobutton(
+            self.param_frame, text="Move to special folder",
+            variable=self.delete_mode_var, value="extract"
+        )
+        self.delete_mode_extract.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        # 删除文件夹
+        self.delete_dir_var = tk.StringVar()
+        self.delete_dir_var.set(self.delete_dir)
+        self.delete_dir_label = ttk.Label(self.param_frame, text="Delete directory:")
+        self.delete_dir_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.delete_dir_entry = ttk.Entry(self.param_frame, textvariable=self.delete_dir_var)
+        self.delete_dir_entry.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        # 为各函数的参数配置留空
+        self.particular_frame = ttk.Frame(self.param_frame)
+        self.particular_frame.pack(side=tk.TOP, anchor=tk.W)
+
+        # 各个功能按钮
+        # 1. 计算各文件夹图片数量
+        self.count_img_btn = ttk.Button(
+            self.func_frame, text="Count images",
+            command=self.count_img_in_dir
+        )
+        self.count_img_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        # 2. 提取图片
+        self.extract_img_btn = ttk.Button(
+            self.func_frame, text="Extract images >",
+            command=self._show_extract_img_param
+        )
+        self.extract_img_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
 
         # 获取所有支持的图片的路径
-        self.all_img_list = self.collect_img()
+        self.all_img_list = self._collect_img()
 
-    def check_dir(self):
+    def __str__(self):
+        return self.delete_mode_var.get() + self.delete_dir_var.get()
+
+    def _check_dir(self):
         print("Directory:", self.dir_abspath)
         if not os.path.isdir(self.dir_abspath):
             msg = (f"The directory\n{self.dir_abspath}\ndoes not exist!"
@@ -108,7 +163,7 @@ class Filter:
     def open_dir(self):
         os.startfile(self.dir_abspath)
 
-    def add_linefeed_to_str(self, raw_str):
+    def _add_linefeed_to_str(self, raw_str):
         """根据窗口进行格式化（换行）"""
         line_maxlen = math.floor((math.floor((self.master.winfo_width() * 1.25) - 30) / 9))
         rst_str_with_linefeed = ""
@@ -119,7 +174,7 @@ class Filter:
                 rst_str_with_linefeed += raw_str[i:]
         return rst_str_with_linefeed
 
-    def count_files(self, recursive=True):
+    def _count_files(self, recursive=True):
         """统计当前文件夹下所有文件数、文件类型及各自的数量"""
         if not recursive:
             all_files = os.listdir(self.dir_abspath)
@@ -151,11 +206,11 @@ class Filter:
             file_suffix = " (No suffix)" if not file_type[0] else file_type[0]
             line = f"{file_type[1]} {file_suffix[1:]}; "
             rst_str += line
-        rst_str = self.add_linefeed_to_str(rst_str)
+        rst_str = self._add_linefeed_to_str(rst_str)
         print(rst_str)
         return rst_str, file_types
 
-    def get_img_stat(self):
+    def _get_img_stat(self):
         img_types = {}
         for k, v in self.file_stat[1]:
             if k in Conf.IMG_SUFFIX:
@@ -167,11 +222,11 @@ class Filter:
         for img_type in img_types:
             line = f"{img_type[1]} {img_type[0][1:]}; "
             rst_str += line
-        rst_str = self.add_linefeed_to_str(rst_str)
+        rst_str = self._add_linefeed_to_str(rst_str)
         print(rst_str)
         return rst_str
 
-    def collect_img(self):
+    def _collect_img(self):
         """
         收集图片。返回图片列表，包含所有图片的相对于target的路径
 
@@ -181,7 +236,7 @@ class Filter:
         os.chdir(self.dir_abspath)  # 将工作目录切换到源文件夹
 
         img_list = []
-        special_dirs = [self.dir_conf.delete_dir]  # 特殊文件夹需跳过
+        special_dirs = [self.delete_dir_var]  # 特殊文件夹需跳过
         for root, dirs, files in os.walk(self.dir_abspath):
             # 如果dir_abspath本身即为特殊文件夹，则不能跳过
             if root.split('\\')[-1] in special_dirs and root != source_dir:
@@ -197,6 +252,35 @@ class Filter:
                     )
         return img_list
 
+    def count_img_in_dir(self):
+        """显示当前文件夹下，所有文件夹中有图片的文件夹的图片数量，按降序排序打印"""
+        self.result_box.delete(1.0, tk.END)
+
+        img_num_dict = {}
+        for root, dirs, files in os.walk(self.dir_abspath):
+            img_num = len([f for f in files if os.path.splitext(f)[1] in Conf.IMG_SUFFIX])
+            if img_num:
+                img_num_dict[root] = img_num
+        img_num_dict = dict(sorted(img_num_dict.items(), key=lambda x: x[1], reverse=True))
+        for k, v in img_num_dict.items():
+            relative_path = os.path.relpath(k, self.dir_abspath)
+            cnt_msg = f"{relative_path}: {v} images."
+            self.result_box.insert(tk.END, cnt_msg + "\n")
+            print(cnt_msg)
+
+    def _clear_particular_frame(self):
+        self.particular_frame.destroy()
+        self.particular_frame = ttk.Frame(self.param_frame)
+        self.particular_frame.pack(side=tk.TOP, anchor=tk.W)
+
+    @staticmethod
+    def input_dir(entry):
+        dir_path = filedialog.askdirectory()
+        if dir_path:
+            entry.delete(0, tk.END)
+            entry.insert(0, dir_path)
+        entry.focus()
+
     def extract_img(self, dest_abspath=None, source_abspath=None):
         """将原目录下的所有图片移动到目的目录"""
         # 默认原目录和目的目录均为当前目录
@@ -206,26 +290,54 @@ class Filter:
             dest_abspath = self.dir_abspath
         if not os.path.isdir(dest_abspath) or not os.path.isdir(source_abspath):
             raise ValueError("Invalid source or destination directory.")
-        print(f"\nMoving images from {source_abspath} to {dest_abspath}...")
+        # 清空
+        self.result_box.delete(1.0, tk.END)
+        start_msg = f"Moving images from {source_abspath} to {dest_abspath}..."
+        self.result_box.insert(tk.END, start_msg + "\n")
+        print(start_msg)
 
         for img in self.all_img_list:
             source = os.path.join(source_abspath, img)
             img_name = img.split('\\')[-1]
             dest = os.path.join(dest_abspath, img_name)
             shutil.move(source, dest)
-            print(f"Moved {img_name} to {dest}.")
+            move_msg = f"Moved {img_name} to {dest}."
+            self.result_box.insert(tk.END, move_msg + "\n")
+            print(move_msg)
 
-    def count_img_in_dir(self):
-        """显示当前文件夹下，所有文件夹中有图片的文件夹的图片数量，按降序排序打印"""
-        img_num_dict = {}
-        for root, dirs, files in os.walk(self.dir_abspath):
-            img_num = len([f for f in files if os.path.splitext(f)[1] in Conf.IMG_SUFFIX])
-            if img_num:
-                img_num_dict[root] = img_num
-        img_num_dict = dict(sorted(img_num_dict.items(), key=lambda x: x[1], reverse=True))
-        for k, v in img_num_dict.items():
-            relative_path = os.path.relpath(k, self.dir_abspath)
-            print(f"{relative_path}: {v} images.")
+    def _show_extract_img_param(self):
+        """显示提取图片功能的参数配置"""
+        self._clear_particular_frame()
+        # 源文件夹
+        self.src_dir_label = ttk.Label(self.particular_frame, text="Source directory:")
+        self.src_dir_entry = ttk.Entry(self.particular_frame)
+        self.open_src_dir_btn = ttk.Button(
+            self.particular_frame, text="Select folder", width=20,
+            command=lambda: self.input_dir(self.src_dir_entry)
+        )
+        self.src_dir_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.open_src_dir_btn.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.src_dir_entry.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.src_dir_entry.insert(0, self.dir_abspath)
+        # 目的文件夹
+        self.dest_dir_label = ttk.Label(self.particular_frame, text="Destination directory:")
+        self.dest_dir_entry = ttk.Entry(self.particular_frame)
+        self.open_dest_dir_btn = ttk.Button(
+            self.particular_frame, text="Select folder", width=20,
+            command=lambda: self.input_dir(self.dest_dir_entry)
+        )
+        self.dest_dir_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.open_dest_dir_btn.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.dest_dir_entry.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.dest_dir_entry.insert(0, self.dir_abspath)
+        # 提取图片按钮
+        self.extract_img_btn = ttk.Button(
+            self.particular_frame, text="Extract images",
+            command=lambda: self.extract_img(
+                self.dest_dir_entry.get(), self.src_dir_entry.get()
+            )
+        )
+        self.extract_img_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
 
     def clean_empty_dirs(self):
         """清理空文件夹"""
