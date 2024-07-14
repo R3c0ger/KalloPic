@@ -314,7 +314,7 @@ class Archiver(ImageViewer):
             filter_window.destroy()
 
         filter_window.protocol("WM_DELETE_WINDOW", on_closing_filter_window)
-        filter_instance = Filter(filter_window, self.tgt_entry.get())
+        filter_instance = Filter(filter_window, self.src_entry.get())
         if not filter_instance.safety:
             on_closing_filter_window()
 
