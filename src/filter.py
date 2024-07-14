@@ -409,3 +409,23 @@ class Filter:
                     print(f"Move {file} to {new_path}.")
                 except FileNotFoundError:
                     print(f"{file} not found.")
+
+    def delete(self, file_list):
+        # 若file_list仅为一条字符串，则将file_list转换为列表
+        if isinstance(file_list, str):
+            file_list = [file_list]
+        # 若file_list为空则返回
+        if len(file_list) == 0:
+            print("No file to delete.")
+            return file_list
+
+        # file_list为list[set[str]]或list[str]时，有各自的删除方式
+        is_setlist = isinstance(file_list[0], set)
+        if is_setlist:
+            self.remove2newdir_in_batches(file_list)
+        else:
+            if self.delete_mode_var == "trash":
+                self.remove2trash(file_list)
+            elif self.delete_mode_var == "extract":
+                self.remove2newdir(file_list)
+        return file_list
