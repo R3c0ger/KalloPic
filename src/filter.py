@@ -34,8 +34,9 @@ class Filter:
             self.master.destroy()
             return
         # 默认值
-        self.delete_dir = "$$DELETE"
-        self.delete_mode_list = ["trash", "extract"]
+        self.delete_dir = "$$DELETE"  # 默认的删除图片所存放的文件夹
+        self.delete_mode_list = ["trash", "extract"]  # 两种删除模式
+        self.min_size_kb = 60.0  # 图片大小阈值，单位KB
 
         # 初始化过滤器配置
         self.dir_conf = FilterConfig()
@@ -126,6 +127,7 @@ class Filter:
         self.delete_dir_entry.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
         # 分割线
         self.sep = ttk.Separator(self.param_frame, orient=tk.HORIZONTAL)
+        self.sep.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
         # 为各函数的参数配置留空
         self.particular_frame = ttk.Frame(self.param_frame)
         self.particular_frame.pack(side=tk.TOP, anchor=tk.W)
@@ -155,6 +157,12 @@ class Filter:
             command=self.filter_gif
         )
         self.filter_gif_btn.pack(side=tk.TOP, anchor=tk.W)
+        # 5. 删除较小图片
+        self.filter_small_imgs_btn = ttk.Button(
+            self.func_frame, text="Filter small images >",
+            command=self._show_filter_small_imgs_param
+        )
+        self.filter_small_imgs_btn.pack(side=tk.TOP, anchor=tk.W)
 
     def _check_dir(self):
         print("Directory:", self.dir_abspath)
@@ -335,13 +343,13 @@ class Filter:
         self.dest_dir_entry.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
         self.dest_dir_entry.insert(0, self.dir_abspath)
         # 提取图片按钮
-        self.extract_img_btn = ttk.Button(
+        self.start_btn = ttk.Button(
             self.particular_frame, text="Extract images",
             command=lambda: self.extract_img(
                 self.dest_dir_entry.get(), self.src_dir_entry.get()
             )
         )
-        self.extract_img_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
 
     def clean_empty_dirs(self):
         """清理空文件夹"""
@@ -447,3 +455,32 @@ class Filter:
                     self._print_rst(f"File {img_relpath} is gif.")
                     gif_imgs.append(img_relpath)
         self.delete(gif_imgs)
+
+    def filter_small_imgs(self, min_size_kb: float = None):
+        """删除小于指定大小的所有图片。应优先执行，以删掉无法打开的图片"""
+        self.result_box.delete(1.0, tk.END)
+        img_list = self._collect_img()
+        small_imgs = []
+        for img_relpath in img_list:
+            img_size = os.path.getsize(img_relpath) / 1024
+            if img_size < min_size_kb:
+                self._print_rst(f"{img_relpath} is too small ({img_size:.2f} KB).")
+                small_imgs.append(img_relpath)
+        self.delete(small_imgs)
+        return small_imgs
+
+    def _show_filter_small_imgs_param(self):
+        """显示过滤小图片的参数配置"""
+        self._clear_particular_frame()
+        # 最小文件大小
+        self.min_size_label = ttk.Label(self.particular_frame, text="Minimum size(KB):")
+        self.min_size_entry = ttk.Entry(self.particular_frame)
+        self.min_size_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.min_size_entry.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.min_size_entry.insert(0, str(self.min_size_kb))
+        # 过滤小图片按钮
+        self.start_btn = ttk.Button(
+            self.particular_frame, text="Filter small images",
+            command=lambda: self.filter_small_imgs(float(self.min_size_entry.get()))
+        )
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
