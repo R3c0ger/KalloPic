@@ -18,12 +18,10 @@ from src.config import Conf
 
 class FilterConfig:
     delete_mode_list = ["trash", "extract"]  # 移动到回收站、移动到文件夹下的特殊文件夹
-    delete_mode = delete_mode_list[1]
     delete_dir = "$$DELETE"  # 源文件夹下用于存储被删除文件的文件夹名称
 
     def __str__(self):
         return (f"All delete modes: {self.delete_mode_list}\n"
-                f"Current delete mode: {self.delete_mode}\n"
                 f"Delete directory: {self.delete_dir}")
 
 
@@ -236,7 +234,7 @@ class Filter:
         os.chdir(self.dir_abspath)  # 将工作目录切换到源文件夹
 
         img_list = []
-        special_dirs = [self.delete_dir_var]  # 特殊文件夹需跳过
+        special_dirs = [self.delete_dir_var.get()]  # 特殊文件夹需跳过
         for root, dirs, files in os.walk(self.dir_abspath):
             # 如果dir_abspath本身即为特殊文件夹，则不能跳过
             if root.split('\\')[-1] in special_dirs and root != source_dir:
@@ -421,10 +419,10 @@ class Filter:
         # file_list为list[set[str]]或list[str]时，有各自的删除方式
         is_setlist = isinstance(file_list[0], set)
         if is_setlist:
-            self.remove2newdir_in_batches(file_list)
+            self.remove2newdir_in_batches(file_list, self.delete_dir_var.get())
         else:
-            if self.delete_mode_var == "trash":
+            if self.delete_mode_var.get() == "trash":
                 self.remove2trash(file_list)
-            elif self.delete_mode_var == "extract":
-                self.remove2newdir(file_list)
+            elif self.delete_mode_var.get() == "extract":
+                self.remove2newdir(file_list, self.delete_dir_var.get())
         return file_list
