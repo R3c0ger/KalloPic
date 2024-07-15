@@ -148,6 +148,13 @@ class Filter:
             self.func_frame, text="Clean empty folders",
             command=self.clean_empty_dirs
         )
+        self.clean_empty_dirs_btn.pack(side=tk.TOP, anchor=tk.W)
+        # 4. 过滤GIF图片
+        self.filter_gif_btn = ttk.Button(
+            self.func_frame, text="Filter GIF images",
+            command=self.filter_gif
+        )
+        self.filter_gif_btn.pack(side=tk.TOP, anchor=tk.W)
 
     def _check_dir(self):
         print("Directory:", self.dir_abspath)
@@ -427,3 +434,15 @@ class Filter:
             elif self.delete_mode_var.get() == "extract":
                 self.remove2newdir(file_list, self.delete_dir_var.get())
         return file_list
+
+    def filter_gif(self):
+        """读取所有图片的前3个字节（GIF89...），判断是否为gif"""
+        self.result_box.delete(1.0, tk.END)
+        img_list = self._collect_img()
+        gif_imgs = []
+        for img_relpath in img_list:
+            with open(img_relpath, 'rb') as f:
+                if f.read(3) == b'GIF':
+                    self._print_rst(f"File {img_relpath} is gif.")
+                    gif_imgs.append(img_relpath)
+        self.delete(gif_imgs)
