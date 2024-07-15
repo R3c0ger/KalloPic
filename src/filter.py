@@ -294,7 +294,7 @@ class Filter:
         dir_path = filedialog.askdirectory()
         if dir_path:
             entry.delete(0, tk.END)
-            entry.insert(0, dir_path)
+            entry.insert(0, dir_path.replace("/", "\\"))
         entry.focus()
 
     def extract_img(self, dest_abspath=None, source_abspath=None):

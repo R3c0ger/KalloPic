@@ -605,7 +605,7 @@ class ImageViewer:
         dir_path = filedialog.askdirectory()
         if dir_path:
             entry.delete(0, tk.END)
-            entry.insert(0, dir_path)
+            entry.insert(0, dir_path.replace("/", "\\"))
 
     def load_dir(self, is_reload=False, sort_by_time=False, sort_by_size=False):
         # 获取输入的文件夹路径，如果为空则提示用户输入，如果不存在则提示用户文件夹不存在
