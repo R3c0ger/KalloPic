@@ -28,7 +28,7 @@ class FilterConfig:
 class Filter:
     def __init__(self, master, dir_abspath, logger=None):
         self.master = master
-        self.dir_abspath = dir_abspath
+        self.dir_abspath = dir_abspath.replace("/", "\\")
         self.safety = self._check_dir()  # 检查目录是否存在
         if not self.safety:
             self.master.destroy()
