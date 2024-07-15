@@ -124,6 +124,8 @@ class Filter:
         self.delete_dir_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
         self.delete_dir_entry = ttk.Entry(self.param_frame, textvariable=self.delete_dir_var)
         self.delete_dir_entry.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        # 分割线
+        self.sep = ttk.Separator(self.param_frame, orient=tk.HORIZONTAL)
         # 为各函数的参数配置留空
         self.particular_frame = ttk.Frame(self.param_frame)
         self.particular_frame.pack(side=tk.TOP, anchor=tk.W)
@@ -134,19 +136,13 @@ class Filter:
             self.func_frame, text="Count images",
             command=self.count_img_in_dir
         )
-        self.count_img_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.count_img_btn.pack(side=tk.TOP, anchor=tk.W)
         # 2. 提取图片
         self.extract_img_btn = ttk.Button(
             self.func_frame, text="Extract images >",
             command=self._show_extract_img_param
         )
-        self.extract_img_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
-
-        # 获取所有支持的图片的路径
-        self.all_img_list = self._collect_img()
-
-    def __str__(self):
-        return self.delete_mode_var.get() + self.delete_dir_var.get()
+        self.extract_img_btn.pack(side=tk.TOP, anchor=tk.W)
 
     def _check_dir(self):
         print("Directory:", self.dir_abspath)
