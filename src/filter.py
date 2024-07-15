@@ -240,18 +240,18 @@ class Filter:
         print(rst_str)
         return rst_str
 
-    def _collect_img(self):
+    def _collect_img(self, source_dir=None):
         """
         收集图片。返回图片列表，包含所有图片的相对于target的路径
 
         :return: 图片列表, list
         """
-        source_dir = self.dir_abspath
-        os.chdir(self.dir_abspath)  # 将工作目录切换到源文件夹
+        source_dir = self.dir_abspath if not source_dir else source_dir
+        os.chdir(source_dir)  # 将工作目录切换到源文件夹
 
         img_list = []
         special_dirs = [self.delete_dir_var.get()]  # 特殊文件夹需跳过
-        for root, dirs, files in os.walk(self.dir_abspath):
+        for root, dirs, files in os.walk(source_dir):
             # 如果dir_abspath本身即为特殊文件夹，则不能跳过
             if root.split('\\')[-1] in special_dirs and root != source_dir:
                 continue
@@ -260,8 +260,7 @@ class Filter:
                 if os.path.splitext(file)[1] in Conf.IMG_SUFFIX:
                     img_list.append(
                         os.path.relpath(
-                            str(os.path.join(root, file)),
-                            self.dir_abspath
+                            str(os.path.join(root, file)), source_dir
                         )
                     )
         return img_list
@@ -309,7 +308,7 @@ class Filter:
         self.result_box.delete(1.0, tk.END)
         self._print_rst(f"Moving images from {source_abspath} to {dest_abspath}...")
 
-        img_list = self._collect_img()
+        img_list = self._collect_img(source_abspath)
         for img in img_list:
             img_name = img.split('\\')[-1]
             source = os.path.join(source_abspath, img)
