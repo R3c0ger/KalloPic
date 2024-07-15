@@ -143,6 +143,11 @@ class Filter:
             command=self._show_extract_img_param
         )
         self.extract_img_btn.pack(side=tk.TOP, anchor=tk.W)
+        # 3. 清理当前文件夹下所有空文件夹
+        self.clean_empty_dirs_btn = ttk.Button(
+            self.func_frame, text="Clean empty folders",
+            command=self.clean_empty_dirs
+        )
 
     def _check_dir(self):
         print("Directory:", self.dir_abspath)
