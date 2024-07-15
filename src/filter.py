@@ -252,6 +252,10 @@ class Filter:
                     )
         return img_list
 
+    def _print_rst(self, msg):
+        self.result_box.insert(tk.END, msg + "\n")
+        print(msg)
+
     def count_img_in_dir(self):
         """显示当前文件夹下，所有文件夹中有图片的文件夹的图片数量，按降序排序打印"""
         self.result_box.delete(1.0, tk.END)
@@ -264,9 +268,7 @@ class Filter:
         img_num_dict = dict(sorted(img_num_dict.items(), key=lambda x: x[1], reverse=True))
         for k, v in img_num_dict.items():
             relative_path = os.path.relpath(k, self.dir_abspath)
-            cnt_msg = f"{relative_path}: {v} images."
-            self.result_box.insert(tk.END, cnt_msg + "\n")
-            print(cnt_msg)
+            self._print_rst(f"{relative_path}: {v} images.")
 
     def _clear_particular_frame(self):
         self.particular_frame.destroy()
@@ -290,20 +292,15 @@ class Filter:
             dest_abspath = self.dir_abspath
         if not os.path.isdir(dest_abspath) or not os.path.isdir(source_abspath):
             raise ValueError("Invalid source or destination directory.")
-        # 清空
         self.result_box.delete(1.0, tk.END)
-        start_msg = f"Moving images from {source_abspath} to {dest_abspath}..."
-        self.result_box.insert(tk.END, start_msg + "\n")
-        print(start_msg)
+        self._print_rst(f"Moving images from {source_abspath} to {dest_abspath}...")
 
         for img in self.all_img_list:
             source = os.path.join(source_abspath, img)
             img_name = img.split('\\')[-1]
             dest = os.path.join(dest_abspath, img_name)
             shutil.move(source, dest)
-            move_msg = f"Moved {img_name} to {dest}."
-            self.result_box.insert(tk.END, move_msg + "\n")
-            print(move_msg)
+            self._print_rst(f"Moved {img_name} to {dest}.")
 
     def _show_extract_img_param(self):
         """显示提取图片功能的参数配置"""
@@ -341,27 +338,30 @@ class Filter:
 
     def clean_empty_dirs(self):
         """清理空文件夹"""
+        self.result_box.delete(1.0, tk.END)
+        # 注明：这个函数只会清理最底层的空文件夹，无法递归清理在清理完后为空的文件夹
+        self._print_rst("Notice: This function only cleans the bottom-level "
+                        "empty folders. You may have to run it for several "
+                        "times to clean all empty folders.")
         if not os.path.exists(self.dir_abspath):
-            print(f"Directory not found: {self.dir_abspath}")
+            self._print_rst(f"Directory not found: {self.dir_abspath}")
             return
         empty_dir_list = []
         for root, dirs, files in os.walk(self.dir_abspath, topdown=False):
             if not dirs and not files:
-                print(f"{root} is an empty directory.")
+                self._print_rst(f"{root} is an empty directory.")
                 empty_dir_list.append(root)
         send2trash(empty_dir_list)
-        print(f"Removed {len(empty_dir_list)} empty directories.")
+        self._print_rst(f"Removed {len(empty_dir_list)} empty directories.")
 
-    @staticmethod
-    def remove2trash(file_list):
+    def remove2trash(self, file_list):
         """将输入的文件列表中的所有文件移动到回收站"""
         send2trash(file_list)
-        print(f"The following files have been moved to the recycle bin.")
+        self._print_rst(f"The following files have been moved to the recycle bin.")
         for file in file_list:
-            print(file)
+            self._print_rst(file)
 
-    @staticmethod
-    def remove2newdir(file_list, delete_dir="$$DELETE"):
+    def remove2newdir(self, file_list, delete_dir="$$DELETE"):
         """将输入的文件列表中的所有文件移动到指定的特殊文件夹"""
         # 检查并创建指定文件夹
         if not os.path.exists(delete_dir) and len(file_list) > 0:
@@ -373,10 +373,9 @@ class Filter:
                 raise FileNotFoundError(errno.ENOENT, f"File not found: {file}")
             file_fullname = os.path.basename(file)
             shutil.move(file, os.path.join(delete_dir, file_fullname))
-            print(f"File {file} moved to {delete_dir}.")
+            self._print_rst(f"File {file} moved to {delete_dir}.")
 
-    @staticmethod
-    def remove2newdir_in_batches(file_sets, delete_dir="$$DELETE"):
+    def remove2newdir_in_batches(self, file_sets, delete_dir="$$DELETE"):
         """将文件移动到新文件夹，分批次移动文件，为每个批次创建一个文件夹"""
         # 检查并创建指定文件夹
         if not os.path.exists(delete_dir) and len(file_sets) > 0:
@@ -406,9 +405,9 @@ class Filter:
             for file in file_set:
                 try:
                     shutil.move(file, os.path.join(new_path))
-                    print(f"Move {file} to {new_path}.")
+                    self._print_rst(f"Move {file} to {new_path}.")
                 except FileNotFoundError:
-                    print(f"{file} not found.")
+                    self._print_rst(f"{file} not found.")
 
     def delete(self, file_list):
         # 若file_list仅为一条字符串，则将file_list转换为列表
@@ -416,7 +415,7 @@ class Filter:
             file_list = [file_list]
         # 若file_list为空则返回
         if len(file_list) == 0:
-            print("No file to delete.")
+            self._print_rst("No file to delete.")
             return file_list
 
         # file_list为list[set[str]]或list[str]时，有各自的删除方式
