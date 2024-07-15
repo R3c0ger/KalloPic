@@ -269,9 +269,15 @@ class Filter:
         self.result_box.insert(tk.END, msg + "\n")
         print(msg)
 
+    def _start_fn(self, collect_img=True):
+        self.result_box.delete(1.0, tk.END)
+        if collect_img:
+            img_list = self._collect_img()
+            return img_list
+
     def count_img_in_dir(self):
         """显示当前文件夹下，所有文件夹中有图片的文件夹的图片数量，按降序排序打印"""
-        self.result_box.delete(1.0, tk.END)
+        self._start_fn(collect_img=False)
 
         img_num_dict = {}
         for root, dirs, files in os.walk(self.dir_abspath):
@@ -305,10 +311,9 @@ class Filter:
             dest_abspath = self.dir_abspath
         if not os.path.isdir(dest_abspath) or not os.path.isdir(source_abspath):
             raise ValueError("Invalid source or destination directory.")
-        self.result_box.delete(1.0, tk.END)
-        self._print_rst(f"Moving images from {source_abspath} to {dest_abspath}...")
 
-        img_list = self._collect_img(source_abspath)
+        img_list = self._start_fn()
+        self._print_rst(f"Moving images from {source_abspath} to {dest_abspath}...")
         for img in img_list:
             img_name = img.split('\\')[-1]
             source = os.path.join(source_abspath, img)
@@ -352,7 +357,7 @@ class Filter:
 
     def clean_empty_dirs(self):
         """清理空文件夹"""
-        self.result_box.delete(1.0, tk.END)
+        self._start_fn(collect_img=False)
         # 注明：这个函数只会清理最底层的空文件夹，无法递归清理在清理完后为空的文件夹
         self._print_rst("Notice: This function only cleans the bottom-level "
                         "empty folders. You may have to run it for several "
@@ -445,8 +450,7 @@ class Filter:
 
     def filter_gif(self):
         """读取所有图片的前3个字节（GIF89...），判断是否为gif"""
-        self.result_box.delete(1.0, tk.END)
-        img_list = self._collect_img()
+        img_list = self._start_fn()
         gif_imgs = []
         for img_relpath in img_list:
             with open(img_relpath, 'rb') as f:
@@ -457,8 +461,7 @@ class Filter:
 
     def filter_small_imgs(self, min_size_kb: float = None):
         """删除小于指定大小的所有图片。应优先执行，以删掉无法打开的图片"""
-        self.result_box.delete(1.0, tk.END)
-        img_list = self._collect_img()
+        img_list = self._start_fn()
         small_imgs = []
         for img_relpath in img_list:
             img_size = os.path.getsize(img_relpath) / 1024
