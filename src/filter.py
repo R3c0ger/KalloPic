@@ -301,9 +301,10 @@ class Filter:
         self.result_box.delete(1.0, tk.END)
         self._print_rst(f"Moving images from {source_abspath} to {dest_abspath}...")
 
-        for img in self.all_img_list:
-            source = os.path.join(source_abspath, img)
+        img_list = self._collect_img()
+        for img in img_list:
             img_name = img.split('\\')[-1]
+            source = os.path.join(source_abspath, img)
             dest = os.path.join(dest_abspath, img_name)
             shutil.move(source, dest)
             self._print_rst(f"Moved {img_name} to {dest}.")
