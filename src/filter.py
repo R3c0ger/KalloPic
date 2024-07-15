@@ -343,7 +343,7 @@ class Filter:
         self.dest_dir_entry.insert(0, self.dir_abspath)
         # 提取图片按钮
         self.start_btn = ttk.Button(
-            self.particular_frame, text="Extract images",
+            self.particular_frame, text="Start Extracting",
             command=lambda: self.extract_img(
                 self.dest_dir_entry.get(), self.src_dir_entry.get()
             )
@@ -479,7 +479,7 @@ class Filter:
         self.min_size_entry.insert(0, str(self.min_size_kb))
         # 过滤小图片按钮
         self.start_btn = ttk.Button(
-            self.particular_frame, text="Filter small images",
+            self.particular_frame, text="Start Filter",
             command=lambda: self.filter_small_imgs(float(self.min_size_entry.get()))
         )
         self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
