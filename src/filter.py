@@ -392,7 +392,11 @@ class Filter:
             if not os.path.exists(file):
                 raise FileNotFoundError(errno.ENOENT, f"File not found: {file}")
             file_fullname = os.path.basename(file)
-            shutil.move(file, os.path.join(delete_dir, file_fullname))
+            try:
+                shutil.move(file, os.path.join(delete_dir, file_fullname))
+            except Exception as e:
+                self._print_rst(str(e))
+                raise e
             self._print_rst(f"File {file} moved to {delete_dir}.")
 
     def remove2newdir_in_batches(self, file_sets, delete_dir="$$DELETE"):
