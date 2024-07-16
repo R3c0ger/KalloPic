@@ -4,3 +4,5 @@ pyperclip
 pypinyin
 setuptools
 pyinstaller
+opencv-python
+imagehash

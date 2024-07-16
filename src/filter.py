@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import errno
+import functools
 import itertools
 import math
 import os
 import shutil
 import string
 import tkinter as tk
+from concurrent.futures import ThreadPoolExecutor
+from multiprocessing import Pool
 from time import strftime, localtime
 from tkinter import ttk, messagebox, filedialog
 
@@ -16,6 +19,7 @@ from send2trash import send2trash
 
 from src.config import Conf
 from src.utils.calc_file_size import calc_file_size
+from src.utils.saturation import img2sat_ratio
 
 
 class FilterConfig:
@@ -43,6 +47,12 @@ class Filter:
         self.max_height = 3000  # 图片最大高度
         self.max_res_ratio = 3.0  # 图片最大分辨率比例
         self.keep_largest = False  # 是否保留最大的图片
+        self.multitask_method = "thread"  # 多任务处理方法，串行、多线程、多进程
+        self.runner_num = 8  # 多任务处理的线程/进程数
+        self.mean_refine = True  # 是否计算直方图均值来细化过滤
+        self.max_sat_ratio_hist = 0.2850  # 饱和度比例系数的阈值（直方图）
+        self.max_sat_ratio_mean = 0.0650  # 饱和度比例系数的阈值（均值）
+        self.sat_threshold = 10  # 饱和度直方图中的最高饱和度阈值
 
         # 初始化过滤器配置
         self.dir_conf = FilterConfig()
@@ -51,7 +61,7 @@ class Filter:
         # 初始化窗口
         self.title = "Filter"
         self.master.title(f"{self.title} - {self.dir_abspath}")
-        self.master.geometry("1000x600")
+        self.master.geometry("1000x700")
         self.master.resizable(False, False)
 
         # 统计信息
@@ -193,6 +203,12 @@ class Filter:
             command=self._show_filter_samename_param
         )
         self.filter_samename_btn.pack(side=tk.TOP, anchor=tk.W)
+        # 10. 删除低饱和度图片
+        self.filter_low_saturation_btn = ttk.Button(
+            self.func_frame, text="Filter low saturation images >",
+            command=self._show_filter_low_saturation_param
+        )
+        self.filter_low_saturation_btn.pack(side=tk.TOP, anchor=tk.W)
 
     def _check_dir(self):
         print("Directory:", self.dir_abspath)
@@ -683,3 +699,138 @@ class Filter:
         )
         self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
 
+    def _multitask_gen_imgdict(
+        self,
+        func: callable,
+        img_list: list[str],
+        multitask_method: str = "serial",
+        runner_num: int = 8,
+    ) -> dict[str, tuple[list, float]]:
+        img_dict = {}
+        if multitask_method == "serial":
+            self._print_rst(f"Calculating serially...")
+            for img_path in img_list:
+                img_dict[img_path] = func(img_path)
+        elif multitask_method == "thread":
+            self._print_rst(f"Calculating while using threading...")
+            with ThreadPoolExecutor(max_workers=runner_num) as executor:
+                img_zip = zip(img_list, executor.map(func, img_list))
+                img_dict = dict(img_zip)
+        elif multitask_method == "multiprocess":
+            self._print_rst(f"Calculating while using multiprocessing...")
+            with Pool(processes=runner_num) as pool:
+                img_zip = zip(img_list, pool.map(func, img_list))
+                img_dict = dict(img_zip)
+        return img_dict
+
+    def _show_multitask_config(self):
+        """显示多任务配置组件"""
+        # 多任务
+        self.multitask_method_label = ttk.Label(self.particular_frame, text="Multitask method:")
+        self.multitask_method_combobox = ttk.Combobox(
+            self.particular_frame, values=["serial", "thread", "multiprocess"], width=15
+        )
+        self.multitask_method_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.multitask_method_combobox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.multitask_method_combobox.set(self.multitask_method)
+        # 运行线程数
+        self.runner_num_label = ttk.Label(self.particular_frame, text="Runner number:")
+        self.runner_num_spinbox = ttk.Spinbox(
+            self.particular_frame,
+            from_=1, to=16, increment=1, width=18
+        )
+        self.runner_num_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.runner_num_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.runner_num_spinbox.insert(0, str(self.runner_num))
+
+    def filter_low_saturation(
+        self,
+        mean_refine: bool = None,
+        max_sat_ratio_hist: float = None,
+        max_sat_ratio_mean: float = None,
+        sat_threshold: float = None,
+        multitask_method: str = None,
+        runner_num: int = None,
+    ) -> list[str]:
+        """删除黑白图片"""
+        img_list = self._start_fn()  # 临时的图片列表
+        low_saturation_imgs = []  # 低饱和度图片列表
+
+        calc_func = functools.partial(img2sat_ratio, _sat_threshold=sat_threshold)
+        img_dict: dict[str, tuple] = self._multitask_gen_imgdict(
+            calc_func, img_list, multitask_method, runner_num,
+        )
+
+        for img_relpath, (hist_ratio, mean_ratio) in img_dict.items():
+            # 如果hist_ratio为-1，则说明图片是L或LA模式的黑白图片
+            if hist_ratio == -1 and mean_ratio == -1:
+                self._print_rst(f"File {img_relpath} is a black and "
+                                f"white image which is L or LA mode.")
+                low_saturation_imgs.append(img_relpath)
+                continue
+            # 如果hist_ratio小于max_sat_ratio_hist，则说明图片是低饱和度图片
+            if hist_ratio < max_sat_ratio_hist:
+                # 如果mean_refine为真，则再用均值法判断是否为低饱和度图片
+                if mean_refine and mean_ratio > max_sat_ratio_mean:
+                    continue
+                self._print_rst(f"Saturation ratio of {img_relpath}: "
+                                f"{hist_ratio[0]:.9f}\tLow saturation image.")
+                low_saturation_imgs.append(img_relpath)
+
+        self._print_rst(f"\nTotal {len(low_saturation_imgs)} low saturation images.")
+        self.delete(low_saturation_imgs)
+        return low_saturation_imgs
+
+    def _show_filter_low_saturation_param(self):
+        """显示过滤低饱和度图片的参数配置"""
+        self._clear_particular_frame()
+        # 直方图饱和度比例
+        self.max_sat_ratio_hist_label = ttk.Label(self.particular_frame, text="Maximum hist ratio:")
+        self.max_sat_ratio_hist_spinbox = ttk.Spinbox(
+            self.particular_frame,
+            from_=0, to=1, increment=0.01, width=18
+        )
+        self.max_sat_ratio_hist_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.max_sat_ratio_hist_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.max_sat_ratio_hist_spinbox.insert(0, str(self.max_sat_ratio_hist))
+        # 均值饱和度比例
+        self.max_sat_ratio_mean_label = ttk.Label(self.particular_frame, text="Maximum mean ratio:")
+        self.max_sat_ratio_mean_spinbox = ttk.Spinbox(
+            self.particular_frame,
+            from_=0, to=1, increment=0.01, width=18
+        )
+        self.max_sat_ratio_mean_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.max_sat_ratio_mean_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.max_sat_ratio_mean_spinbox.insert(0, str(self.max_sat_ratio_mean))
+        # 饱和度阈值
+        self.sat_threshold_label = ttk.Label(self.particular_frame, text="Saturation threshold:")
+        self.sat_threshold_spinbox = ttk.Spinbox(
+            self.particular_frame,
+            from_=0, to=10, increment=1, width=18
+        )
+        self.sat_threshold_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.sat_threshold_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.sat_threshold_spinbox.insert(0, str(self.sat_threshold))
+        # 均值修正
+        self.mean_refine_var = tk.BooleanVar()
+        self.mean_refine_var.set(self.mean_refine)
+        self.mean_refine_checkbtn = ttk.Checkbutton(
+            self.particular_frame, text="Refine by mean ratio",
+            variable=self.mean_refine_var
+        )
+        self.mean_refine_checkbtn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        # 多任务配置
+        self._show_multitask_config()
+        # 过滤低饱和度图片按钮
+        self.start_btn = ttk.Button(
+            self.particular_frame, text="Start Filter",
+            command=lambda: self.filter_low_saturation(
+                self.mean_refine_var.get(),
+                float(self.max_sat_ratio_hist_spinbox.get()),
+                float(self.max_sat_ratio_mean_spinbox.get()),
+                int(self.sat_threshold_spinbox.get()),
+                multitask_method=self.multitask_method_combobox.get(),
+                runner_num=int(self.runner_num_spinbox.get())
+            )
+        )
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
