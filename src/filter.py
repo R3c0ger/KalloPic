@@ -11,6 +11,7 @@ import tkinter as tk
 from time import strftime, localtime
 from tkinter import ttk, messagebox, filedialog
 
+from PIL import Image
 from send2trash import send2trash
 
 from src.config import Conf
@@ -37,6 +38,10 @@ class Filter:
         self.delete_dir = "$$DELETE"  # 默认的删除图片所存放的文件夹
         self.delete_mode_list = ["trash", "extract"]  # 两种删除模式
         self.min_size_kb = 60.0  # 图片大小阈值，单位KB
+        self.min_size_pixel = 800  # 图片分辨率阈值，单位像素
+        self.max_height = 3000  # 图片最大高度
+        self.max_res_ratio = 3.0  # 图片最大分辨率比例
+        self.keep_largest = False  # 是否保留最大的图片
 
         # 初始化过滤器配置
         self.dir_conf = FilterConfig()
@@ -157,12 +162,30 @@ class Filter:
             command=self.filter_gif
         )
         self.filter_gif_btn.pack(side=tk.TOP, anchor=tk.W)
-        # 5. 删除较小图片
+        # 5. 删除文件大小较小图片
         self.filter_small_imgs_btn = ttk.Button(
             self.func_frame, text="Filter small images >",
             command=self._show_filter_small_imgs_param
         )
         self.filter_small_imgs_btn.pack(side=tk.TOP, anchor=tk.W)
+        # 6. 删除分辨率较小图片
+        self.filter_low_size_imgs_btn = ttk.Button(
+            self.func_frame, text="Filter low size images >",
+            command=self._show_filter_low_size_imgs_param
+        )
+        self.filter_low_size_imgs_btn.pack(side=tk.TOP, anchor=tk.W)
+        # 7. 删除过高图片
+        self.filter_high_imgs_btn = ttk.Button(
+            self.func_frame, text="Filter high images >",
+            command=self._show_filter_high_imgs_param
+        )
+        self.filter_high_imgs_btn.pack(side=tk.TOP, anchor=tk.W)
+        # 8. 删除长图
+        self.filter_long_imgs_btn = ttk.Button(
+            self.func_frame, text="Filter long images >",
+            command=self._show_filter_long_imgs_param
+        )
+        self.filter_long_imgs_btn.pack(side=tk.TOP, anchor=tk.W)
 
     def _check_dir(self):
         print("Directory:", self.dir_abspath)
@@ -490,3 +513,105 @@ class Filter:
             command=lambda: self.filter_small_imgs(float(self.min_size_entry.get()))
         )
         self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+
+    def filter_low_size_imgs(self, min_size_pixel: int = None):
+        """删除垂直和水平分辨率均低于预设值的图片"""
+        img_list = self._start_fn()
+        low_size_imgs = []
+        for img_relpath in img_list:
+            img = Image.open(img_relpath)
+            img_size = img.size
+            if img_size[0] < min_size_pixel and img_size[1] < min_size_pixel:
+                self._print_rst(f"Size of {img_relpath}: {img_size}\tLow size image.")
+                low_size_imgs.append(img_relpath)
+        self.delete(low_size_imgs)
+        return low_size_imgs
+
+    def _show_filter_low_size_imgs_param(self):
+        """显示过滤低分辨率图片的参数配置"""
+        self._clear_particular_frame()
+        # 最小分辨率
+        self.min_size_label = ttk.Label(self.particular_frame, text="Minimum size(pixel):")
+        self.min_size_spinbox = ttk.Spinbox(
+            self.particular_frame,
+            from_=0, to=10000, increment=1, width=18
+        )
+        self.min_size_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.min_size_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.min_size_spinbox.insert(0, str(self.min_size_pixel))
+        # 过滤低分辨率图片按钮
+        self.start_btn = ttk.Button(
+            self.particular_frame, text="Start Filter",
+            command=lambda: self.filter_low_size_imgs(int(self.min_size_spinbox.get()))
+        )
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+
+    def filter_high_imgs(self, max_height: int = None):
+        """删除图片高度超过预设值的图片"""
+        img_list = self._start_fn()
+        high_imgs = []  # 高度超过预设值的图片列表
+        for img_relpath in img_list:
+            img = Image.open(img_relpath)
+            img_height = img.size[1]
+            if img_height > max_height:
+                self._print_rst(f"Height of {img_relpath}: {img_height}\tHigh image.")
+                high_imgs.append(img_relpath)
+        self.delete(high_imgs)
+        return high_imgs
+
+    def _show_filter_high_imgs_param(self):
+        """显示过滤高图片的参数配置"""
+        self._clear_particular_frame()
+        # 最大高度
+        self.max_height_label = ttk.Label(self.particular_frame, text="Maximum height(pixel):")
+        self.max_height_spinbox = ttk.Spinbox(
+            self.particular_frame,
+            from_=0, to=10000, increment=1, width=18
+        )
+        self.max_height_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.max_height_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.max_height_spinbox.insert(0, str(self.max_height))
+        # 过滤高图片按钮
+        self.start_btn = ttk.Button(
+            self.particular_frame, text="Start Filter",
+            command=lambda: self.filter_high_imgs(int(self.max_height_spinbox.get()))
+        )
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+
+    def filter_long_imgs(self, max_res_ratio: float = None):
+        """删除长图，即长宽比超过预设值的图片"""
+        img_list = self._start_fn()
+        long_imgs = []
+        for img_relpath in img_list:
+            img = Image.open(img_relpath)
+            img_width, img_height = img.size
+            ratio_h2w = img_height / img_width
+            if ratio_h2w >= max_res_ratio:
+                self._print_rst(f"Ratio(h/w) of {img_relpath}: "
+                                f"{ratio_h2w:.9f}\tLong image.")
+                long_imgs.append(img_relpath)
+                continue
+            ratio_w2h = img_width / img_height
+            if ratio_w2h >= max_res_ratio:
+                self._print_rst(f"Ratio(w/h) of {img_relpath}: "
+                                f"{ratio_w2h:.9f}\tLong image.")
+                long_imgs.append(img_relpath)
+        self.delete(long_imgs)
+        return long_imgs
+
+    def _show_filter_long_imgs_param(self):
+        """显示过滤长图的参数配置"""
+        self._clear_particular_frame()
+        # 最大分辨率比例
+        self.max_res_ratio_label = ttk.Label(self.particular_frame, text="Maximum ratio:")
+        self.max_res_ratio_entry = ttk.Entry(self.particular_frame)
+        self.max_res_ratio_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.max_res_ratio_entry.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.max_res_ratio_entry.insert(0, str(self.max_res_ratio))
+        # 过滤长图按钮
+        self.start_btn = ttk.Button(
+            self.particular_frame, text="Start Filter",
+            command=lambda: self.filter_long_imgs(float(self.max_res_ratio_entry.get()))
+        )
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+
