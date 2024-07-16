@@ -312,7 +312,8 @@ class Filter:
         if not os.path.isdir(dest_abspath) or not os.path.isdir(source_abspath):
             raise ValueError("Invalid source or destination directory.")
 
-        img_list = self._start_fn()
+        self.result_box.delete(1.0, tk.END)
+        img_list = self._collect_img(source_abspath)
         self._print_rst(f"Moving images from {source_abspath} to {dest_abspath}...")
         for img in img_list:
             img_name = img.split('\\')[-1]
@@ -412,7 +413,6 @@ class Filter:
         while stamp_num:
             stamp_num, remainder = divmod(stamp_num, 62)
             prefix += charset[remainder]
-        print(prefix)
 
         # 使用生成器生成文件夹名，创建并移动文件
         dirname_iter = (''.join(chars) for chars in name_iter)

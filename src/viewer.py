@@ -75,7 +75,6 @@ def get_exif_data(img_relpath, img_pil):
         f"{round(img_size / 1024, 3)} KB" if img_size < 1024 ** 2 else \
         f"{round(img_size / 1024 ** 2, 3)} MB" if img_size < 1024 ** 3 else \
         f"{round(img_size / 1024 ** 3, 3)} GB"
-    img_size_str = f"{img_size_str}" if img_size >= 1024 else img_size_str
     last_modified_ts = time.localtime(os.path.getmtime(img_relpath))
     last_modified = time.strftime('%Y-%m-%d %H:%M:%S', last_modified_ts)
     filetype = imghdr.what(img_relpath)

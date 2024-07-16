@@ -44,6 +44,7 @@ class Config:
         '.png', '.PNG',
         '.bmp', '.BMP',
         '.webp', '.WEBP',
+        '.gif', '.GIF',
     )
 
 
