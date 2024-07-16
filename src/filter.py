@@ -15,6 +15,7 @@ from PIL import Image
 from send2trash import send2trash
 
 from src.config import Conf
+from src.utils.calc_file_size import calc_file_size
 
 
 class FilterConfig:
@@ -186,6 +187,12 @@ class Filter:
             command=self._show_filter_long_imgs_param
         )
         self.filter_long_imgs_btn.pack(side=tk.TOP, anchor=tk.W)
+        # 9. 删除文件名相同的图片
+        self.filter_samename_btn = ttk.Button(
+            self.func_frame, text="Filter same name images >",
+            command=self._show_filter_samename_param
+        )
+        self.filter_samename_btn.pack(side=tk.TOP, anchor=tk.W)
 
     def _check_dir(self):
         print("Directory:", self.dir_abspath)
@@ -612,6 +619,67 @@ class Filter:
         self.start_btn = ttk.Button(
             self.particular_frame, text="Start Filter",
             command=lambda: self.filter_long_imgs(float(self.max_res_ratio_entry.get()))
+        )
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+
+    def filter_samename(self, keep_largest: bool = None):
+        """删去无扩展名时文件名重复或者文件名之间相差"_tmb"的图片"""
+        img_list = self._start_fn()  # 临时的图片列表
+        similar_lists_2d = []  # 二维列表，每个元素为一组文件名相似的图片
+        similar_group_num = 0  # 文件名相似的图片组数
+
+        # 找出无扩展名时文件名重复或“部分”重复的图片
+        for img_i in img_list:
+            img_i_name = os.path.splitext(os.path.basename(img_i))[0]
+            img_similar_list = [img_i]  # 与img_i文件名相似的图片列表
+            # 存在文件名和其他某个文件相同，但扩展名前多了"_tmb"的图片
+            if "_tmb" in img_i_name:
+                img_i_name = img_i_name.replace("_tmb", "")
+            # 如果有多个图片，其文件名大幅度重合，则说明这些图片是重复的
+            for img_j in img_list:
+                if img_i_name in img_j and img_i != img_j:
+                    img_similar_list.append(img_j)
+
+            # 如果文件名相似图片组中有多于1张图片，则说明对当前img_i有重复图片
+            if len(img_similar_list) > 1:
+                similar_group_num += 1
+                self._print_rst(f"Group {similar_group_num}: "
+                                f"{len(img_similar_list)} similar images:")
+                for img in img_similar_list:
+                    tab = (2 - ('_tmb' in img)) * "\t"
+                    img_size = calc_file_size(img)
+                    self._print_rst(f"\t{img}{tab}{img_size}")
+                    # 将图片所在位置的字符串改成不可能出现在文件名中的字符
+                    img_list[img_list.index(img)] = "*"
+
+                # 如果keep_largest为真，则仅保留一张文件大小最大的图片
+                if keep_largest:
+                    img_similar_list.remove(
+                        max(img_similar_list, key=os.path.getsize)
+                    )
+                similar_lists_2d.append(img_similar_list)
+
+        # 展平二维列表，得到所有文件名相似图片的列表
+        similar_list = list(itertools.chain(*similar_lists_2d))
+        self._print_rst(f"\nTotal {len(similar_list)} similar images.\n")
+        self.delete(similar_list)
+        return similar_list
+
+    def _show_filter_samename_param(self):
+        """显示过滤重名图片的参数配置"""
+        self._clear_particular_frame()
+        # 保留最大文件
+        self.keep_largest_var = tk.BooleanVar()
+        self.keep_largest_var.set(self.keep_largest)
+        self.keep_largest_checkbtn = ttk.Checkbutton(
+            self.particular_frame, text="Keep the largest file",
+            variable=self.keep_largest_var
+        )
+        self.keep_largest_checkbtn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        # 过滤重名图片按钮
+        self.start_btn = ttk.Button(
+            self.particular_frame, text="Start Filter",
+            command=lambda: self.filter_samename(self.keep_largest_var.get())
         )
         self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
 
