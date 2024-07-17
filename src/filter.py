@@ -19,6 +19,7 @@ from send2trash import send2trash
 
 from src.config import Conf
 from src.utils.calc_file_size import calc_file_size
+from src.utils.path_set_list import merge_intersecting_sets
 from src.utils.saturation import img2sat_ratio
 
 
@@ -838,3 +839,47 @@ class Filter:
             )
         )
         self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+
+    def _filter_similar_imgs(
+        self,
+        gen_func: callable,  # 生成字典的函数
+        calc_func: callable,  # 计算相似度的函数
+        condition: callable,  # 判断相似的条件
+        multitask_method: str = "thread",
+        runner_num: int = 8,
+    ) -> list[set[str]]:
+        """删除重复图片。最好先过滤出低饱和度图片"""
+        img_list = self._start_fn()
+        # (1) 生成图片特征和长宽比值
+        # 图片特征字典，键为图片路径，值为参与比较图片相似度的参数（如哈希、直方图）和长宽比值
+        img_dict: dict[str, tuple[any, float]] = self._multitask_gen_imgdict(
+            gen_func, img_list, multitask_method, runner_num,
+        )
+        self._print_rst(f"Image feature calculation completed.\n")
+
+        # (2) 所有图片两两比较，计算相似度（距离或指标）
+        img_pairs = itertools.combinations(img_list, 2)
+        similar_img_sets = []
+        for img_pair in img_pairs:
+            img_i_path, img_j_path = img_pair
+            # 若img_i和img_j的长宽比值差异较大，则认为不是相似图片
+            if abs(img_dict[img_i_path][1] - img_dict[img_j_path][1]) > 0.05:
+                continue
+            # 否则计算相似度，函数calc_func的参数为待比较图片的特征
+            dist = calc_func(img_dict[img_i_path][0], img_dict[img_j_path][0])
+            # 与阈值比较
+            if condition(dist):
+                self._print_rst(f"Similarity between {img_i_path} and {img_j_path}: {dist}")
+                similar_img_sets.append({img_i_path, img_j_path})
+
+        # (3) 将所有相似图片对去重，同一组相似图片合并在一个集合中
+        merged_sets = merge_intersecting_sets(similar_img_sets)
+        # 统计合并后的集合数量与筛选出来的图片数量
+        self._print_rst(f"Total {len(merged_sets)} sets.")
+        total_imgs = 0
+        for img_set in merged_sets:
+            total_imgs += len(img_set)
+        self._print_rst(f"Total {total_imgs} similar images.")
+        # 删除并返回结果
+        self.delete(merged_sets)
+        return merged_sets
