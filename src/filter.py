@@ -21,6 +21,11 @@ from src.config import Conf
 from src.utils.calc_file_size import calc_file_size
 from src.utils.path_set_list import merge_intersecting_sets
 from src.utils.saturation import img2sat_ratio
+from src.utils.sim_metrics import (
+    HashFunc, img2hash, calc_hash_hammingdist,
+    img2normvec, calc_cosine_similarity,
+    img2numpy, mse
+)
 
 
 class FilterConfig:
@@ -54,6 +59,11 @@ class Filter:
         self.max_sat_ratio_hist = 0.2850  # 饱和度比例系数的阈值（直方图）
         self.max_sat_ratio_mean = 0.0650  # 饱和度比例系数的阈值（均值）
         self.sat_threshold = 10  # 饱和度直方图中的最高饱和度阈值
+        self.max_hash_dist = 3  # 哈希距离阈值
+        self.hash_func = "ahash"  # 使用哈希比较图片时选用的哈希函数
+        self.hash_size = 8  # 使用哈希比较图片时的哈希大小
+        self.min_cos_dist = 0.996  # 余弦相似度阈值
+        self.max_mse = 48.0  # 均方误差阈值
 
         # 初始化过滤器配置
         self.dir_conf = FilterConfig()
@@ -210,6 +220,24 @@ class Filter:
             command=self._show_filter_low_saturation_param
         )
         self.filter_low_saturation_btn.pack(side=tk.TOP, anchor=tk.W)
+        # 11. 删除相似图片（哈希）
+        self.filter_similar_imgs_hash_btn = ttk.Button(
+            self.func_frame, text="Filter similar images (Hash) >",
+            command=self._show_filter_similar_imgs_hash_param
+        )
+        self.filter_similar_imgs_hash_btn.pack(side=tk.TOP, anchor=tk.W)
+        # 12. 删除相似图片（余弦相似度）
+        self.filter_similar_imgs_cos_btn = ttk.Button(
+            self.func_frame, text="Filter similar images (Cosine) >",
+            command=self._show_filter_similar_imgs_cos_param
+        )
+        self.filter_similar_imgs_cos_btn.pack(side=tk.TOP, anchor=tk.W)
+        # 13. 删除相似图片（均方误差）
+        self.filter_similar_imgs_mse_btn = ttk.Button(
+            self.func_frame, text="Filter similar images (MSE) >",
+            command=self._show_filter_similar_imgs_mse_param
+        )
+        self.filter_similar_imgs_mse_btn.pack(side=tk.TOP, anchor=tk.W)
         # 设置所有的功能按钮的宽度一致，文字左对齐
         child: ttk.Button
         for child in self.func_frame.winfo_children():
@@ -883,3 +911,151 @@ class Filter:
         # 删除并返回结果
         self.delete(merged_sets)
         return merged_sets
+
+    def filter_similar_imgs_hash(
+        self,
+        max_hash_dist: int = None,
+        hash_func: str = None,
+        hash_size: int = None,
+        multitask_method: str = None,
+        runner_num: int = None,
+    ) -> list[set[str]]:
+        """删除重复图片，方法为哈希算法"""
+        if hash_func not in HashFunc:
+            raise ValueError(f"Unsupported hash function: {hash_func}")
+
+        return self._filter_similar_imgs(
+            gen_func=functools.partial(
+                img2hash,
+                hash_size=hash_size,
+                hash_func=hash_func,
+            ),
+            calc_func=calc_hash_hammingdist,
+            condition=lambda dist: dist <= max_hash_dist,
+            multitask_method=multitask_method,
+            runner_num=runner_num,
+        )
+
+    def _show_filter_similar_imgs_hash_param(self):
+        """显示过滤相似图片的参数配置"""
+        self._clear_particular_frame()
+        # 最大汉明距离
+        self.max_hash_dist_label = ttk.Label(self.particular_frame, text="Maximum hash distance:")
+        self.max_hash_dist_spinbox = ttk.Spinbox(
+            self.particular_frame,
+            from_=0, to=100, increment=1, width=18
+        )
+        self.max_hash_dist_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.max_hash_dist_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.max_hash_dist_spinbox.insert(0, str(self.max_hash_dist))
+        # 哈希函数
+        self.hash_func_label = ttk.Label(self.particular_frame, text="Hash function:")
+        self.hash_func_combobox = ttk.Combobox(
+            self.particular_frame, values=list(HashFunc), width=15
+        )
+        self.hash_func_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.hash_func_combobox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.hash_func_combobox.set(self.hash_func)
+        # 哈希大小
+        self.hash_size_label = ttk.Label(self.particular_frame, text="Hash size:")
+        self.hash_size_spinbox = ttk.Spinbox(
+            self.particular_frame,
+            from_=1, to=64, increment=1, width=18
+        )
+        self.hash_size_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.hash_size_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.hash_size_spinbox.insert(0, str(self.hash_size))
+        # 多任务配置
+        self._show_multitask_config()
+        # 过滤相似图片按钮
+        self.start_btn = ttk.Button(
+            self.particular_frame, text="Start Filter",
+            command=lambda: self.filter_similar_imgs_hash(
+                int(self.max_hash_dist_spinbox.get()),
+                self.hash_func_combobox.get(),
+                int(self.hash_size_spinbox.get()),
+                self.multitask_method_combobox.get(),
+                int(self.runner_num_spinbox.get())
+            )
+        )
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+
+    def filter_similar_imgs_cos(
+        self,
+        min_cos_dist: float = None,
+        multitask_method: str = None,
+        runner_num: int = None,
+    ) -> list[set[str]]:
+        """删除重复图片，方法为余弦相似度，耗时约为哈希算法的4倍"""
+        return self._filter_similar_imgs(
+            gen_func=img2normvec,
+            calc_func=calc_cosine_similarity,
+            condition=lambda dist: dist >= min_cos_dist,
+            multitask_method=multitask_method,
+            runner_num=runner_num,
+        )
+
+    def _show_filter_similar_imgs_cos_param(self):
+        """显示过滤相似图片的参数配置"""
+        self._clear_particular_frame()
+        # 最小余弦距离
+        self.min_cos_dist_label = ttk.Label(self.particular_frame, text="Minimum cosine distance:")
+        self.min_cos_dist_spinbox = ttk.Spinbox(
+            self.particular_frame,
+            from_=0, to=1, increment=0.01, width=18
+        )
+        self.min_cos_dist_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.min_cos_dist_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.min_cos_dist_spinbox.insert(0, str(self.min_cos_dist))
+        # 多任务配置
+        self._show_multitask_config()
+        # 过滤相似图片按钮
+        self.start_btn = ttk.Button(
+            self.particular_frame, text="Start Filter",
+            command=lambda: self.filter_similar_imgs_cos(
+                float(self.min_cos_dist_spinbox.get()),
+                self.multitask_method_combobox.get(),
+                int(self.runner_num_spinbox.get())
+            )
+        )
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+
+    def filter_similar_imgs_mse(
+        self,
+        max_mse: float = None,
+        multitask_method: str = None,
+        runner_num: int = None,
+    ) -> list[set[str]]:
+        """删除重复图片，方法为均方误差"""
+        return self._filter_similar_imgs(
+            gen_func=img2numpy,
+            calc_func=mse,
+            condition=lambda dist: dist <= max_mse,
+            multitask_method=multitask_method,
+            runner_num=runner_num,
+        )
+
+    def _show_filter_similar_imgs_mse_param(self):
+        """显示过滤相似图片的参数配置"""
+        self._clear_particular_frame()
+        # 最大均方误差
+        self.max_mse_label = ttk.Label(self.particular_frame, text="Maximum MSE:")
+        self.max_mse_spinbox = ttk.Spinbox(
+            self.particular_frame,
+            from_=0, to=10000, increment=1, width=18
+        )
+        self.max_mse_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.max_mse_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.max_mse_spinbox.insert(0, str(self.max_mse))
+        # 多任务配置
+        self._show_multitask_config()
+        # 过滤相似图片按钮
+        self.start_btn = ttk.Button(
+            self.particular_frame, text="Start Filter",
+            command=lambda: self.filter_similar_imgs_mse(
+                float(self.max_mse_spinbox.get()),
+                self.multitask_method_combobox.get(),
+                int(self.runner_num_spinbox.get())
+            )
+        )
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
