@@ -209,6 +209,10 @@ class Filter:
             command=self._show_filter_low_saturation_param
         )
         self.filter_low_saturation_btn.pack(side=tk.TOP, anchor=tk.W)
+        # 设置所有的功能按钮的宽度一致，文字左对齐
+        child: ttk.Button
+        for child in self.func_frame.winfo_children():
+            child.config(width=28)
 
     def _check_dir(self):
         print("Directory:", self.dir_abspath)
