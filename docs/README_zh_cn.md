@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-    <img src="https://img.shields.io/badge/version-v0.2.1-brightgreen" alt="version">
+    <img src="https://img.shields.io/badge/version-v0.3.0-brightgreen" alt="version">
     <a href="https://opensource.org/licenses/MIT">
         <img src="https://img.shields.io/badge/license-MIT-blue" alt="license">
     </a>
