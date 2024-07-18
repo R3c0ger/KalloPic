@@ -28,15 +28,6 @@ from src.utils.sim_metrics import (
 )
 
 
-class FilterConfig:
-    delete_mode_list = ["trash", "extract"]  # 移动到回收站、移动到文件夹下的特殊文件夹
-    delete_dir = "$$DELETE"  # 源文件夹下用于存储被删除文件的文件夹名称
-
-    def __str__(self):
-        return (f"All delete modes: {self.delete_mode_list}\n"
-                f"Delete directory: {self.delete_dir}")
-
-
 class Filter:
     def __init__(self, master, dir_abspath, logger=None):
         self.master = master
@@ -65,10 +56,6 @@ class Filter:
         self.min_cos_dist = 0.996  # 余弦相似度阈值
         self.max_mse = 48.0  # 均方误差阈值
 
-        # 初始化过滤器配置
-        self.dir_conf = FilterConfig()
-        self.delete_dir_abspath = os.path.join(self.dir_abspath, self.dir_conf.delete_dir)
-        print(self.dir_conf, "\n\t", self.delete_dir_abspath)
         # 初始化窗口
         self.title = "Filter"
         self.master.title(f"{self.title} - {self.dir_abspath}")
