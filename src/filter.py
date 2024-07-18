@@ -112,9 +112,13 @@ class Filter:
         self.param_frame.pack(side=tk.LEFT, anchor=tk.N, expand=0, fill=tk.Y)
         # 输出结果框
         self.result_box = tk.Text(self.filter_group)
-        self.result_box.pack(side=tk.RIGHT, anchor=tk.N, expand=1, fill=tk.BOTH)
+        self.result_box.pack(side=tk.LEFT, anchor=tk.N, expand=1, fill=tk.BOTH)
         self.result_box.insert(tk.END, "Response will be shown here.")
         self.result_box.config(relief=tk.SUNKEN)
+        # 输出结果框的滚动条
+        self.scrollbar = ttk.Scrollbar(self.filter_group, command=self.result_box.yview)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.result_box.config(yscrollcommand=self.scrollbar.set)
 
         # 通用参数配置选项
         # 删除模式
