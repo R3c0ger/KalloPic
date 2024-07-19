@@ -441,12 +441,18 @@ class Filter:
             if not dirs and not files:
                 self._print_rst(f"{root} is an empty directory.")
                 empty_dir_list.append(root)
-        send2trash(empty_dir_list)
+        try:
+            send2trash(empty_dir_list)
+        except Exception as e:
+            self._print_rst(str(e))
         self._print_rst(f"Removed {len(empty_dir_list)} empty directories.")
 
     def remove2trash(self, file_list):
         """将输入的文件列表中的所有文件移动到回收站"""
-        send2trash(file_list)
+        try:
+            send2trash(file_list)
+        except Exception as e:
+            self._print_rst(str(e))
         self._print_rst(f"The following files have been moved to the recycle bin.")
         for file in file_list:
             self._print_rst(file)
@@ -466,7 +472,6 @@ class Filter:
                 shutil.move(file, os.path.join(delete_dir, file_fullname))
             except Exception as e:
                 self._print_rst(str(e))
-                raise e
             self._print_rst(f"File {file} moved to {delete_dir}.")
 
     def remove2newdir_in_batches(self, file_sets, delete_dir="$$DELETE"):
