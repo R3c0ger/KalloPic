@@ -86,7 +86,7 @@ def get_exif_data(img_relpath, img_pil):
         f"resolution: {img_pil.size[0]} x {img_pil.size[1]}"
     )
     brief_data_str = f"{img_size_str}, {filetype}, {img_pil.size[0]} x {img_pil.size[1]}"
-    return data_str[:-1], brief_data_str
+    return data_str, brief_data_str
 
 
 class ImageViewer:
