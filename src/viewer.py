@@ -467,7 +467,7 @@ class ImageViewer:
         self.canvas.tag_bind(self.img_tag, "<ButtonPress-1>", self.on_image_press)
         self.canvas.tag_bind(self.img_tag, "<B1-Motion>", self.on_image_drag)
         # 鼠标右键菜单
-        self.canvas.bind("<Button-3>", self.show_context_menu)
+        self.canvas.bind("<Button-3>", lambda e: self.context_menu.post(e.x_root, e.y_root))
 
     def on_image_press(self, event):
         """记录鼠标点击位置"""
@@ -853,10 +853,6 @@ class ImageViewer:
                 widget.pack(self.layout[widget])
         # 修改右键菜单中的名称和命令
         self.context_menu.entryconfig(12, label="Hide Widgets", command=self.hide_widgets)
-
-    def show_context_menu(self, event):
-        """显示右键菜单"""
-        self.context_menu.post(event.x_root, event.y_root)
 
     def custom_bg_color(self):
         """自定义背景颜色"""
