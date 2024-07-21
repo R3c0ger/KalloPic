@@ -40,10 +40,10 @@ class Filter:
         # 默认值
         self.delete_dir = "$$DELETE"  # 默认的删除图片所存放的文件夹
         self.delete_mode_list = ["trash", "extract"]  # 两种删除模式
-        self.min_size_kb = 60.0  # 图片大小阈值，单位KB
+        self.min_size_kb = 80.0  # 图片大小阈值，单位KB
         self.min_size_pixel = 800  # 图片分辨率阈值，单位像素
         self.max_height = 3000  # 图片最大高度
-        self.max_res_ratio = 3.0  # 图片最大分辨率比例
+        self.max_res_ratio = 2.0  # 图片最大分辨率比例
         self.keep_largest = False  # 是否保留最大的图片
         self.multitask_method = "thread"  # 多任务处理方法，串行、多线程、多进程
         self.runner_num = 8  # 多任务处理的线程/进程数
