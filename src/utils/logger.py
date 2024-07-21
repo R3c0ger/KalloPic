@@ -6,6 +6,8 @@ import os
 import warnings
 from logging.handlers import RotatingFileHandler
 
+from src.config import Conf
+
 
 def setup_logger(level=logging.INFO, log_file=None):
     logger = logging.getLogger('appLogger')
@@ -50,3 +52,9 @@ def setup_logger(level=logging.INFO, log_file=None):
     logger.addHandler(file_handler)
 
     return logger
+
+
+Logger = setup_logger(
+    level=Conf.LOG_LEVEL,
+    log_file=Conf.LOG_RELPATH
+)

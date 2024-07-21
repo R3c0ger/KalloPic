@@ -15,6 +15,7 @@ import send2trash
 from PIL import Image, ImageTk, ImageOps
 
 from src.config import Conf
+from src.utils.logger import Logger
 
 
 # 图片后缀名
@@ -53,7 +54,7 @@ def get_img_list(source_dir, is_recursive=False, sort_by_time=False, sort_by_siz
                     img_abspath = os.path.join(_root, img_relpath)
                     img_full_relpath = os.path.relpath(str(img_abspath), source_dir)
                     img_list.append(img_full_relpath)
-    # print(f"共找到 {len(img_list)} 张图片")
+    # Logger.debug(f"共找到 {len(img_list)} 张图片")
     if sort_by_size:
         img_list.sort(key=lambda x: os.path.getsize(os.path.join(source_dir, x)))
     elif sort_by_time:
@@ -738,7 +739,7 @@ class ImageViewer:
             f"Error Retry Count: {self.error_retry_count}\n" + \
             f"Fit Mode: {self.fit_mode}\n" + \
             f"Strech Small: {self.strech_small}\n"
-        print(attr_log)
+        Logger.info(attr_log)
 
     def show_prev_img(self):
         if len(self.img_paths) == 0:
@@ -864,7 +865,7 @@ class ImageViewer:
 
     def change_fit_mode(self, mode_addr):
         """更改图像适应模式"""
-        print(f"Change fit mode to {mode_addr}")
+        Logger.debug(f"Change fit mode to {mode_addr}")
         self.fit_mode = mode_addr
         self.load_img()
 

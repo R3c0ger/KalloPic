@@ -19,6 +19,7 @@ from send2trash import send2trash
 
 from src.config import Conf
 from src.utils.calc_file_size import calc_file_size
+from src.utils.logger import Logger
 from src.utils.path_set_list import merge_intersecting_sets
 from src.utils.saturation import img2sat_ratio
 from src.utils.sim_metrics import (
@@ -29,7 +30,7 @@ from src.utils.sim_metrics import (
 
 
 class Filter:
-    def __init__(self, master, dir_abspath, logger=None):
+    def __init__(self, master, dir_abspath):
         self.master = master
         self.dir_abspath = dir_abspath.replace("/", "\\")
         self.safety = self._check_dir()  # 检查目录是否存在
@@ -235,7 +236,7 @@ class Filter:
             child.config(width=28)
 
     def _check_dir(self):
-        print("Directory:", self.dir_abspath)
+        Logger.debug("Directory:" + self.dir_abspath)
         if not os.path.isdir(self.dir_abspath):
             msg = (f"The directory\n{self.dir_abspath}\ndoes not exist!"
                    if self.dir_abspath else "Please input a directory!")
@@ -272,7 +273,7 @@ class Filter:
                             self.dir_abspath
                         )
                     )
-        print(f"Found {len(all_files)} files.")
+        Logger.debug(f"Found {len(all_files)} files.")
 
         # 统计文件类型
         file_types = {}
@@ -291,7 +292,7 @@ class Filter:
             line = f"{file_type[1]} {file_suffix[1:]}; "
             rst_str += line
         rst_str = self._add_linefeed_to_str(rst_str)
-        print(rst_str)
+        Logger.debug(rst_str)
         return rst_str, file_types
 
     def _get_img_stat(self):
@@ -307,7 +308,7 @@ class Filter:
             line = f"{img_type[1]} {img_type[0][1:]}; "
             rst_str += line
         rst_str = self._add_linefeed_to_str(rst_str)
-        print(rst_str)
+        Logger.debug(rst_str)
         return rst_str
 
     def _collect_img(self, source_dir=None):
@@ -337,7 +338,7 @@ class Filter:
 
     def _print_rst(self, msg):
         self.result_box.insert(tk.END, msg + "\n")
-        print(msg)
+        Logger.debug(msg)
 
     def _start_fn(self, collect_img=True):
         self.result_box.delete(1.0, tk.END)

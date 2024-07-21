@@ -15,6 +15,7 @@ from pypinyin import pinyin, Style
 from src.config import Conf
 from src.dict_editor import DictEditor
 from src.filter import Filter
+from src.utils.logger import Logger
 from src.preset import DIR_KEYWORD_MAP
 from src.viewer import ImageViewer
 
@@ -136,7 +137,7 @@ class Archiver(ImageViewer):
         """根据汉语拼音的拉丁字母排序角色列表"""
         pinyin_list = [pinyin(name, style=Style.FIRST_LETTER) for name in self.chara_list]
         pinyin_list = ["".join([c[0] for c in letter_list]) for letter_list in pinyin_list]
-        # print(pinyin_list)
+        # Logger.debug(pinyin_list)
         sorted_words = sorted(zip(pinyin_list, self.chara_list), key=lambda x: x[0])
         self.chara_list = [word for _, word in sorted_words]
 
@@ -166,7 +167,7 @@ class Archiver(ImageViewer):
     def update_option_list(self, event):
         input_str = self.input_box.get()
         trimmed_str = "".join([c for c in input_str if c in string.ascii_letters])
-        # print(event.keysym)
+        # Logger.debug(event.keysym)
         # 只有按下字母和删除键，才更新备选列表。按下允许执行的按键则不会清理输入框内容
         if event.keysym not in self.refresh_opr:
             if event.keysym not in self.able_opr:
@@ -174,7 +175,7 @@ class Archiver(ImageViewer):
                 self.input_box.insert(0, trimmed_str)
             return
         trimmed_str = trimmed_str.lower()
-        # print(trimmed_str)
+        # Logger.debug(trimmed_str)
 
         # 如果备选列表存在，则销毁
         if self.option_list is not None:
@@ -239,7 +240,7 @@ class Archiver(ImageViewer):
                 self.status_bar.config(text="Please choose a charactor.")
                 return
         tgt_chr_dir = f"{tgt_dir}/{character}"
-        # print(tgt_chr_dir)
+        # Logger.debug(tgt_chr_dir)
 
         # 获取当前图片绝对路径
         if not self.img_name:
@@ -247,7 +248,7 @@ class Archiver(ImageViewer):
             return
         img_relpath = self.img_name
         img_abspath = f"{self.img_dir}/{img_relpath}"
-        # print(img_abspath)
+        # Logger.debug(img_abspath)
 
         # 将图片移动到目标角色文件夹
         if not os.path.exists(tgt_chr_dir) or not os.path.isdir(tgt_chr_dir):
@@ -267,7 +268,7 @@ class Archiver(ImageViewer):
         self.load_dir(is_reload=True)
 
         moved_msg = f"Moved {img_relpath} to {tgt_chr_dir}."
-        print(moved_msg)
+        Logger.debug(moved_msg)
         self.status_bar.config(text=moved_msg)
 
     def open_config_window(self, _=None):
