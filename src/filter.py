@@ -921,6 +921,7 @@ class Filter:
         if hash_func not in HashFunc:
             raise ValueError(f"Unsupported hash function: {hash_func}")
 
+        self._print_rst(f"Filtering similar images using {hash_func}...")
         return self._filter_similar_imgs(
             gen_func=functools.partial(
                 img2hash,
@@ -984,6 +985,7 @@ class Filter:
         runner_num: int = None,
     ) -> list[set[str]]:
         """删除重复图片，方法为余弦相似度，耗时约为哈希算法的4倍"""
+        self._print_rst(f"Filtering similar images using cosine similarity...")
         return self._filter_similar_imgs(
             gen_func=img2normvec,
             calc_func=calc_cosine_similarity,
@@ -1024,6 +1026,7 @@ class Filter:
         runner_num: int = None,
     ) -> list[set[str]]:
         """删除重复图片，方法为均方误差"""
+        self._print_rst(f"Filtering similar images using mean squared error...")
         return self._filter_similar_imgs(
             gen_func=img2numpy,
             calc_func=mse,
