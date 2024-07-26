@@ -4,8 +4,7 @@
 import tkinter as tk
 from tkinter import ttk, simpledialog
 
-from src.preset import DIR_KEYWORD_MAP
-
+from src.config import Conf
 
 class DictEditor:
     def __init__(self, master):
@@ -70,7 +69,7 @@ class DictEditor:
 
     def read_default_dict(self):
         self.clear_list()
-        for role, keyword in DIR_KEYWORD_MAP.items():
+        for role, keyword in Conf.DIR_KEYWORD_MAP.items():
             self.tree.insert("", tk.END, values=(role, keyword))
 
     def add_item(self):

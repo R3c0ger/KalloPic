@@ -1,9 +1,11 @@
 #!usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import logging
+import os
 import sys
+
+from src.preset import ORDERED_DIR_KEYWORD_MAP
 
 
 # noinspection PyBroadException,PyProtectedMember
@@ -46,6 +48,8 @@ class Config:
         '.webp', '.WEBP',
         '.gif', '.GIF',
     )
+    DIR_KEYWORD_MAP = ORDERED_DIR_KEYWORD_MAP
+    DIR_KEYWORD_MAP_LIST = list(DIR_KEYWORD_MAP.keys())
 
 
 class DevelopmentConfig(Config):

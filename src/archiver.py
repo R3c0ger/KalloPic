@@ -16,7 +16,6 @@ from src.config import Conf
 from src.dict_editor import DictEditor
 from src.filter import Filter
 from src.utils.logger import Logger
-from src.preset import DIR_KEYWORD_MAP
 from src.viewer import ImageViewer
 
 
@@ -27,10 +26,10 @@ def get_closest_match(input_str):
 
     # 创建一个优先队列来保存最接近的前n个字符串
     closest_matches = []
-    for name, shortcuts in DIR_KEYWORD_MAP.items():
-        # 先按相似度排序，再按出场次数优先级排序
-        priority = shortcuts[0]
-        for shortcut in shortcuts[1:]:
+    for name, shortcuts in Conf.DIR_KEYWORD_MAP.items():
+        # 先按相似度排序，再按优先级排序，取有序字典顺序作为优先级
+        priority = Conf.DIR_KEYWORD_MAP_LIST.index(name)
+        for shortcut in shortcuts:
             sim = similarity(input_str, shortcut)
             if sim == 0:
                 continue
@@ -52,7 +51,7 @@ class Archiver(ImageViewer):
     def __init__(self, master):
         super().__init__(master)
         # 获取角色列表
-        self.chara_list = list([name for name, _ in DIR_KEYWORD_MAP.items()])
+        self.chara_list = list([name for name, _ in Conf.DIR_KEYWORD_MAP.items()])
         # 按汉字拼音首字母排序
         self.sort_by_pinyin_first_letter()
         # 快捷移动输入框中可更新列表的按键
@@ -296,6 +295,7 @@ class Archiver(ImageViewer):
 
         # 检测该窗口是否关闭，如果是则启用按钮和快捷键
         config_window.protocol("WM_DELETE_WINDOW", on_closing_config_window)
+        # Logger.debug(Conf.DIR_KEYWORD_MAP)
 
     def open_filter_window(self, _=None):
         """打开过滤器窗口"""
