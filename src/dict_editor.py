@@ -6,38 +6,25 @@ from tkinter import ttk, simpledialog
 
 from src.config import Conf
 
+
 class DictEditor:
     def __init__(self, master):
         self.master = master
         self.master.title("Dictionary Configuration")
+        self.master.geometry("1000x400")
+        self.master.minsize(1000, 400)
+        self.master.maxsize(1920, 1080)
 
-        self.button_frame = ttk.Frame(master)
-        self.button_frame.pack(anchor=tk.CENTER)
-        self.add_button = ttk.Button(self.button_frame, text="Add", command=self.add_item)
-        self.add_button.pack(side=tk.LEFT, padx=5, pady=5)
-        self.delete_button = ttk.Button(self.button_frame, text="Delete", command=self.delete_selected)
-        self.delete_button.pack(side=tk.LEFT, padx=5, pady=5)
-        self.move_up_button = ttk.Button(self.button_frame, text="Up", command=self.move_up)
-        self.move_up_button.pack(side=tk.LEFT, padx=5, pady=5)
-        self.move_down_button = ttk.Button(self.button_frame, text="Down", command=self.move_down)
-        self.move_down_button.pack(side=tk.LEFT, padx=5, pady=5)
-        self.edit_button = ttk.Button(self.button_frame, text="Edit", command=self.edit_item)
-        self.edit_button.pack(side=tk.LEFT, padx=5, pady=5)
-        self.clear_button = ttk.Button(self.button_frame, text="Clear", command=self.clear_list)
-        self.read_default_button = ttk.Button(self.button_frame, text="Read Default", command=self.read_default_dict)
-        self.read_default_button.pack(side=tk.LEFT, padx=5, pady=5)
-        self.export_button = ttk.Button(self.button_frame, text="Export", command=self.export_dict)
-        self.export_button.pack(side=tk.LEFT, padx=5, pady=5)
-        self.import_button = ttk.Button(self.button_frame, text="Import", command=self.import_dict)
-        self.import_button.pack(side=tk.LEFT, padx=5, pady=5)
-        self.save_button = ttk.Button(self.button_frame, text="Save", command=self.save_dict)
-        self.save_button.pack(side=tk.LEFT, padx=5, pady=5)
-        self.cancel_button = ttk.Button(self.button_frame, text="Cancel", command=self.cancel)
-        self.cancel_button.pack(side=tk.LEFT, padx=5, pady=5)
+        # 逻辑控制
+        self.saved = True
 
-        # 配置列表
-        self.tree_frame = ttk.Frame(master)
-        self.tree_frame.pack(fill=tk.BOTH, expand=True)
+        # 主要组件
+        self.main_frame = ttk.Frame(master)
+        self.main_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        # 左侧字典列表
+        self.tree_frame = ttk.Frame(self.main_frame)
+        self.tree_frame.pack(side=tk.LEFT, anchor=tk.N, fill=tk.BOTH, expand=True)
         # 添加右侧滚动条
         self.tree_scrollbar = ttk.Scrollbar(self.tree_frame, orient=tk.VERTICAL)
         self.tree_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -48,71 +35,113 @@ class DictEditor:
         )
         self.tree.heading("Role", text="Role name")
         self.tree.heading("Keyword", text="Key words")
-        self.tree.column("Role", width=150, minwidth=100, stretch=tk.NO, anchor=tk.W)
-        self.tree.column("Keyword", stretch=tk.YES, anchor=tk.W)
-        self.tree.pack(fill=tk.BOTH, side=tk.LEFT, expand=True)
+        self.tree.column("Role", width=150, minwidth=100, stretch=False, anchor=tk.W)
+        self.tree.column("Keyword", stretch=True, anchor=tk.W)
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         # 绑定Scrollbar到Treeview
         self.tree_scrollbar.config(command=self.tree.yview)
-        # 部分快捷键
-        self.tree.bind("<Delete>", lambda e: self.delete_selected())
-        self.tree.bind("<Double-1>", lambda e: self.edit_item())
+
+        # 右侧功能按钮栏
+        self.button_frame = ttk.Frame(self.main_frame)
+        self.button_frame.pack(side=tk.RIGHT, anchor=tk.N)
+        self.add_button = ttk.Button(self.button_frame, text="Add(Ctrl+A)", command=self.add_item)
+        self.add_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.delete_button = ttk.Button(self.button_frame, text="Delete(Del)", command=self.delete_selected)
+        self.delete_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.move_up_button = ttk.Button(
+            self.button_frame, text="Move up",
+            command=lambda x="up": self.move_item(x)
+        )
+        self.move_up_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.move_down_button = ttk.Button(
+            self.button_frame, text="Move down",
+            command=lambda x="down": self.move_item(x)
+        )
+        self.move_down_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.edit_button = ttk.Button(self.button_frame, text="Edit(Ctrl+E)", command=self.edit_item)
+        self.edit_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.clear_button = ttk.Button(self.button_frame, text="Clear", command=self.clear_list)
+        self.clear_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.read_default_button = ttk.Button(self.button_frame, text="Read Default", command=self.read_default_dict)
+        self.read_default_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.export_button = ttk.Button(self.button_frame, text="Export", command=self.export_dict)
+        self.export_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.import_button = ttk.Button(self.button_frame, text="Import", command=self.import_dict)
+        self.import_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.save_button = ttk.Button(self.button_frame, text="Save(Ctrl+S)", command=self.save_dict)
+        self.save_button.pack(side=tk.TOP, padx=5, pady=5)
 
         # 下方状态栏
         self.status_bar = ttk.Label(master, text="Default dictionary ready.")
-        self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+        self.status_bar.pack(side=tk.BOTTOM, fill=tk.X, padx=5, pady=5)
 
+        # 快捷键
+        self.master.bind("<Delete>", lambda e: self.delete_selected())
+        self.master.bind("<Double-1>", lambda e: self.edit_item())
+        self.master.bind("<Control-a>", lambda e: self.add_item())
+        self.master.bind("<Control-s>", lambda e: self.save_dict())
+        self.master.bind("<Control-e>", lambda e: self.edit_item())
+
+        # 读取默认列表
         self.read_default_dict()
 
     def clear_list(self):
         self.tree.delete(*self.tree.get_children())
         self.status_bar.config(text="Cleared.")
 
-    def read_default_dict(self):
+    def read_dict(self, _dict):
         self.clear_list()
-        for role, keyword in Conf.DIR_KEYWORD_MAP.items():
+        for role, keyword in _dict.items():
             self.tree.insert("", tk.END, values=(role, keyword))
 
+    def read_default_dict(self):
+        self.read_dict(Conf.DIR_KEYWORD_MAP)
+        self.status_bar.config(text="Default dictionary ready.")
+
     def add_item(self):
+        self.saved = False
         role = simpledialog.askstring("Input name", "Name:")
         if not role:
+            self.saved = True
             return
         keyword = simpledialog.askstring("Input keyword", "Keyword:")
         if not keyword:
+            self.saved = True
             return
         self.tree.insert("", tk.END, values=(role, keyword))
 
     def delete_selected(self):
+        self.saved = False
         selected_items = self.tree.selection()
         if not selected_items:
-            self.status_bar.config(text="Please choose the row(s) to delete.")
+            self.status_bar.config(text="Please select the row(s) to delete.")
             return
         for item in selected_items:
             self.tree.delete(item)
-        self.status_bar.config(text="")
+        self.status_bar.config(text="The selected row(s) have been deleted.")
 
-    def move_up(self):
+    def move_item(self, direction):
+        self.saved = False
         selected_items = self.tree.selection()
         if not selected_items:
-            self.status_bar.config(text="Please choose the row(s) to move.")
+            self.status_bar.config(text="Please select the row(s) to move.")
             return
-        for item in selected_items:
-            prev_item = self.tree.prev(item)
-            if prev_item:
-                self.tree.move(item, self.tree.parent(prev_item), self.tree.index(prev_item))
-        self.status_bar.config(text="")
 
-    def move_down(self):
-        selected_items = self.tree.selection()
-        if not selected_items:
-            self.status_bar.config(text="Please choose the row(s) to move.")
-            return
-        for item in reversed(selected_items):
-            next_item = self.tree.next(item)
-            if next_item:
-                self.tree.move(item, self.tree.parent(next_item), self.tree.index(next_item))
-        self.status_bar.config(text="")
+        if direction == "up":
+            for item in selected_items:
+                prev_item = self.tree.prev(item)
+                if prev_item and prev_item not in selected_items:
+                    self.tree.move(item, self.tree.parent(prev_item), self.tree.index(prev_item))
+        elif direction == "down":
+            for item in reversed(selected_items):
+                next_item = self.tree.next(item)
+                if next_item and next_item not in selected_items:
+                    self.tree.move(item, self.tree.parent(next_item), self.tree.index(next_item))
+
+        self.status_bar.config(text=f"Moved {len(selected_items)} row(s) {direction}.")
 
     def edit_item(self):
+        self.saved = False
         selected_items = self.tree.selection()
         if len(selected_items) != 1:
             self.status_bar.config(text="Please choose one row to edit.")
@@ -121,12 +150,19 @@ class DictEditor:
         current_values = self.tree.item(item, "values")
         new_role = simpledialog.askstring("Edit name", "Name:", initialvalue=current_values[0])
         if not new_role:
+            self.saved = True
             return
         new_keyword = simpledialog.askstring("Edit keyword", "Keyword:", initialvalue=current_values[1])
         if not new_keyword:
+            if new_role == current_values[0]:
+                self.saved = True
             return
+        else:
+            if new_role == current_values[0] and new_keyword == current_values[1]:
+                self.saved = True
+                return
         self.tree.item(item, values=(new_role, new_keyword))
-        self.status_bar.config(text="")
+        self.status_bar.config(text="The selected row has been edited.")
 
     def export_dict(self):
         """导出ini文件到当前目录"""
@@ -139,12 +175,8 @@ class DictEditor:
         pass
 
     def import_dict(self):
-        pass
+        self.saved = False
 
     def save_dict(self):
         """保存到全局变量"""
-        pass
-
-    def cancel(self):
-        """取消对字典的配置并退出"""
-        pass
+        self.saved = True

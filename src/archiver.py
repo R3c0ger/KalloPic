@@ -281,10 +281,10 @@ class Archiver(ImageViewer):
         config_window.geometry("1000x400")
         config_window.wm_iconbitmap(Conf.LOGO_ICON_PATH)
         config_window.focus()
-        DictEditor(config_window)  # 传入配置字典窗口对象
+        win = DictEditor(config_window)  # 传入配置字典窗口对象
 
         def on_closing_config_window():
-            if messagebox.askokcancel(
+            if win.saved or messagebox.askokcancel(
                 "Quit", "Do you want to quit?\nChanges will not be automatically saved."
             ):
                 self.config_button.config(state="enabled")
@@ -295,7 +295,6 @@ class Archiver(ImageViewer):
 
         # 检测该窗口是否关闭，如果是则启用按钮和快捷键
         config_window.protocol("WM_DELETE_WINDOW", on_closing_config_window)
-        # Logger.debug(Conf.DIR_KEYWORD_MAP)
 
     def open_filter_window(self, _=None):
         """打开过滤器窗口"""
