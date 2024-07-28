@@ -48,8 +48,8 @@ class Config:
         '.webp', '.WEBP',
         '.gif', '.GIF',
     )
-    DIR_KEYWORD_MAP = ORDERED_DIR_KEYWORD_MAP
-    DIR_KEYWORD_MAP_LIST = list(DIR_KEYWORD_MAP.keys())
+    DEFAULT_DIR_KEYWORD_MAP = ORDERED_DIR_KEYWORD_MAP
+    DIR_KEYWORD_MAP = DEFAULT_DIR_KEYWORD_MAP
 
 
 class DevelopmentConfig(Config):

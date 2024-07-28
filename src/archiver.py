@@ -28,7 +28,7 @@ def get_closest_match(input_str):
     closest_matches = []
     for name, shortcuts in Conf.DIR_KEYWORD_MAP.items():
         # 先按相似度排序，再按优先级排序，取有序字典顺序作为优先级
-        priority = Conf.DIR_KEYWORD_MAP_LIST.index(name)
+        priority = list(Conf.DIR_KEYWORD_MAP.keys()).index(name)
         for shortcut in shortcuts:
             sim = similarity(input_str, shortcut)
             if sim == 0:
