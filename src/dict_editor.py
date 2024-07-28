@@ -11,8 +11,8 @@ class DictEditor:
     def __init__(self, master):
         self.master = master
         self.master.title("Dictionary Configuration")
-        self.master.geometry("1000x400")
-        self.master.minsize(1000, 400)
+        self.master.geometry("1000x500")
+        self.master.minsize(1000, 500)
         self.master.maxsize(1920, 1080)
 
         # 逻辑控制
@@ -49,20 +49,20 @@ class DictEditor:
         self.delete_button = ttk.Button(self.button_frame, text="Delete(Del)", command=self.delete_selected)
         self.delete_button.pack(side=tk.TOP, padx=5, pady=5)
         self.move_up_button = ttk.Button(
-            self.button_frame, text="Move up",
-            command=lambda x="up": self.move_item(x)
-        )
+            self.button_frame, text="Move up", command=lambda x="up": self.move_item(x))
         self.move_up_button.pack(side=tk.TOP, padx=5, pady=5)
         self.move_down_button = ttk.Button(
-            self.button_frame, text="Move down",
-            command=lambda x="down": self.move_item(x)
-        )
+            self.button_frame, text="Move down", command=lambda x="down": self.move_item(x))
         self.move_down_button.pack(side=tk.TOP, padx=5, pady=5)
         self.edit_button = ttk.Button(self.button_frame, text="Edit(Ctrl+E)", command=self.edit_item)
         self.edit_button.pack(side=tk.TOP, padx=5, pady=5)
         self.clear_button = ttk.Button(self.button_frame, text="Clear", command=self.clear_list)
         self.clear_button.pack(side=tk.TOP, padx=5, pady=5)
-        self.read_default_button = ttk.Button(self.button_frame, text="Read Default", command=self.read_default_dict)
+        self.read_current_button = ttk.Button(
+            self.button_frame, text="Read Current\n    (Ctrl+R)", command=self.read_current_dict)
+        self.read_current_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.read_default_button = ttk.Button(
+            self.button_frame, text="Read Default\n    (Ctrl+D)", command=self.read_default_dict)
         self.read_default_button.pack(side=tk.TOP, padx=5, pady=5)
         self.export_button = ttk.Button(self.button_frame, text="Export", command=self.export_dict)
         self.export_button.pack(side=tk.TOP, padx=5, pady=5)
@@ -81,9 +81,11 @@ class DictEditor:
         self.master.bind("<Control-a>", lambda e: self.add_item())
         self.master.bind("<Control-s>", lambda e: self.save_dict())
         self.master.bind("<Control-e>", lambda e: self.edit_item())
+        self.master.bind("<Control-r>", lambda e: self.read_current_dict())
+        self.master.bind("<Control-d>", lambda e: self.read_default_dict())
 
-        # 读取默认列表
-        self.read_default_dict()
+        # 读取所存储的字典
+        self.read_current_dict()
 
     def clear_list(self):
         self.tree.delete(*self.tree.get_children())
@@ -95,8 +97,12 @@ class DictEditor:
             self.tree.insert("", tk.END, values=(role, keyword))
 
     def read_default_dict(self):
-        self.read_dict(Conf.DIR_KEYWORD_MAP)
+        self.read_dict(Conf.DEFAULT_DIR_KEYWORD_MAP)
         self.status_bar.config(text="Default dictionary ready.")
+
+    def read_current_dict(self):
+        self.read_dict(Conf.DIR_KEYWORD_MAP)
+        self.status_bar.config(text="Dictionary ready.")
 
     def add_item(self):
         self.saved = False
