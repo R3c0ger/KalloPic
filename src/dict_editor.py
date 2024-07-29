@@ -1,8 +1,10 @@
 #!usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import configparser
 import tkinter as tk
-from tkinter import ttk, simpledialog
+from collections import OrderedDict
+from tkinter import ttk, simpledialog, messagebox, filedialog
 
 from src.config import Conf
 
@@ -64,12 +66,11 @@ class DictEditor:
         self.read_default_button = ttk.Button(
             self.button_frame, text="Read Default\n    (Ctrl+D)", command=self.read_default_dict)
         self.read_default_button.pack(side=tk.TOP, padx=5, pady=5)
-        self.export_button = ttk.Button(self.button_frame, text="Export", command=self.export_dict)
-        self.export_button.pack(side=tk.TOP, padx=5, pady=5)
-        self.import_button = ttk.Button(self.button_frame, text="Import", command=self.import_dict)
-        self.import_button.pack(side=tk.TOP, padx=5, pady=5)
         self.save_button = ttk.Button(self.button_frame, text="Save(Ctrl+S)", command=self.save_dict)
         self.save_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.export_button = ttk.Button(
+            self.button_frame, text="Export", command=lambda: self.export_dict())
+        self.export_button.pack(side=tk.TOP, padx=5, pady=5)
 
         # 下方状态栏
         self.status_bar = ttk.Label(master, text="Default dictionary ready.")
@@ -184,4 +185,29 @@ class DictEditor:
         self.saved = True
         Conf.DIR_KEYWORD_MAP = self.tree_to_ordered_dict()
         self.status_bar.config(text="Dictionary saved.")
-        pprint(Conf.DIR_KEYWORD_MAP)
+
+    def export_dict(self, filename="DirnameShortcut"):
+        """导出ini文件到当前目录"""
+        dictionary = Conf.DIR_KEYWORD_MAP
+        if not self.saved and messagebox.askokcancel(
+            "Save dictionary",
+            "Do you want to export the unsaved dictionary?\n"
+            "If no, the last saved dictionary will be exported."
+        ):
+            dictionary = self.tree_to_ordered_dict()
+
+        config = configparser.ConfigParser()
+        for key, value in dictionary.items():
+            config[key] = {}
+            config[key]['variants'] = value
+
+        # 打开窗口让用户选择保存位置和文件名，默认位置为当前目录
+        save_path = filedialog.asksaveasfilename(
+            initialdir=".", initialfile=filename, defaultextension=".ini",
+            filetypes=[("INI files", "*.ini"), ("All files", "*.*")]
+        )
+        if not save_path:
+            self.status_bar.config(text="Export canceled.")
+            return
+        with open(save_path, 'w', encoding='utf-8') as configfile:
+            config.write(configfile)

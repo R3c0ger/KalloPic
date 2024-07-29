@@ -95,3 +95,4 @@ ENV/
 *.doc[xm]?
 *.psd
 log
+*.ini
