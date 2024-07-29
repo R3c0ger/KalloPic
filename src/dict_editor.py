@@ -170,19 +170,16 @@ class DictEditor:
         self.tree.item(item, values=(new_role, new_keyword))
         self.status_bar.config(text="The selected row has been edited.")
 
-    def export_dict(self):
-        """导出ini文件到当前目录"""
+    def tree_to_ordered_dict(self):
         new_dict = {}
         for item in self.tree.get_children():
             role, keyword = self.tree.item(item, "values")
             new_dict[role] = keyword
-        with open("DirnameShortcutDict.ini", "w", encoding="utf-8") as f:
-            f.write(str(new_dict))
-        pass
-
-    def import_dict(self):
-        self.saved = False
+        return OrderedDict(new_dict)
 
     def save_dict(self):
         """保存到全局变量"""
         self.saved = True
+        Conf.DIR_KEYWORD_MAP = self.tree_to_ordered_dict()
+        self.status_bar.config(text="Dictionary saved.")
+        pprint(Conf.DIR_KEYWORD_MAP)
