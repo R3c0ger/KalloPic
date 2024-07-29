@@ -86,12 +86,13 @@ class DictEditor:
 
         # 读取所存储的字典
         self.read_saved_dict()
+        self.saved = True
 
     def clear_list(self):
         self.tree.delete(*self.tree.get_children())
         self.status_bar.config(text="Cleared.")
 
-    def read_dict(self, _dict):
+        self.saved = False
         self.clear_list()
         for role, keyword in _dict.items():
             self.tree.insert("", tk.END, values=(role, keyword))
