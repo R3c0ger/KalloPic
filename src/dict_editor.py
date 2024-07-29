@@ -58,9 +58,9 @@ class DictEditor:
         self.edit_button.pack(side=tk.TOP, padx=5, pady=5)
         self.clear_button = ttk.Button(self.button_frame, text="Clear", command=self.clear_list)
         self.clear_button.pack(side=tk.TOP, padx=5, pady=5)
-        self.read_current_button = ttk.Button(
-            self.button_frame, text="Read Current\n    (Ctrl+R)", command=self.read_current_dict)
-        self.read_current_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.read_saved_button = ttk.Button(
+            self.button_frame, text="Read saved\n    (Ctrl+R)", command=self.read_saved_dict)
+        self.read_saved_button.pack(side=tk.TOP, padx=5, pady=5)
         self.read_default_button = ttk.Button(
             self.button_frame, text="Read Default\n    (Ctrl+D)", command=self.read_default_dict)
         self.read_default_button.pack(side=tk.TOP, padx=5, pady=5)
@@ -81,11 +81,11 @@ class DictEditor:
         self.master.bind("<Control-a>", lambda e: self.add_item())
         self.master.bind("<Control-s>", lambda e: self.save_dict())
         self.master.bind("<Control-e>", lambda e: self.edit_item())
-        self.master.bind("<Control-r>", lambda e: self.read_current_dict())
+        self.master.bind("<Control-r>", lambda e: self.read_saved_dict())
         self.master.bind("<Control-d>", lambda e: self.read_default_dict())
 
         # 读取所存储的字典
-        self.read_current_dict()
+        self.read_saved_dict()
 
     def clear_list(self):
         self.tree.delete(*self.tree.get_children())
@@ -100,7 +100,7 @@ class DictEditor:
         self.read_dict(Conf.DEFAULT_DIR_KEYWORD_MAP)
         self.status_bar.config(text="Default dictionary ready.")
 
-    def read_current_dict(self):
+    def read_saved_dict(self):
         self.read_dict(Conf.DIR_KEYWORD_MAP)
         self.status_bar.config(text="Dictionary ready.")
 
