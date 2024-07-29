@@ -92,17 +92,18 @@ class DictEditor:
         self.tree.delete(*self.tree.get_children())
         self.status_bar.config(text="Cleared.")
 
+    def dict_to_tree(self, _dict):
         self.saved = False
         self.clear_list()
         for role, keyword in _dict.items():
             self.tree.insert("", tk.END, values=(role, keyword))
 
     def read_default_dict(self):
-        self.read_dict(Conf.DEFAULT_DIR_KEYWORD_MAP)
+        self.dict_to_tree(Conf.DEFAULT_DIR_KEYWORD_MAP)
         self.status_bar.config(text="Default dictionary ready.")
 
     def read_saved_dict(self):
-        self.read_dict(Conf.DIR_KEYWORD_MAP)
+        self.dict_to_tree(Conf.DIR_KEYWORD_MAP)
         self.status_bar.config(text="Dictionary ready.")
 
     def add_item(self):
