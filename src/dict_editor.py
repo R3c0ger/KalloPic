@@ -7,6 +7,7 @@ from collections import OrderedDict
 from tkinter import ttk, simpledialog, messagebox, filedialog
 
 from src.config import Conf
+from src.utils.logger import Logger
 
 
 class DictEditor:
@@ -71,6 +72,9 @@ class DictEditor:
         self.export_button = ttk.Button(
             self.button_frame, text="Export", command=lambda: self.export_dict())
         self.export_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.import_button = ttk.Button(
+            self.button_frame, text="Import", command=lambda: self.import_dict())
+        self.import_button.pack(side=tk.TOP, padx=5, pady=5)
 
         # 下方状态栏
         self.status_bar = ttk.Label(master, text="Default dictionary ready.")
@@ -206,8 +210,33 @@ class DictEditor:
             initialdir=".", initialfile=filename, defaultextension=".ini",
             filetypes=[("INI files", "*.ini"), ("All files", "*.*")]
         )
+        self.master.focus_force()
+        Logger.debug(save_path)
         if not save_path:
             self.status_bar.config(text="Export canceled.")
             return
         with open(save_path, 'w', encoding='utf-8') as configfile:
             config.write(configfile)
+
+    def import_dict(self, filename="DirnameShortcut"):
+        """从ini文件导入"""
+        self.saved = False
+        config = configparser.ConfigParser()
+        ini_path = filedialog.askopenfilename(
+            initialdir=".", initialfile=filename, defaultextension=".ini",
+            filetypes=[("INI files", "*.ini"), ("All files", "*.*")]
+        )
+        self.master.focus_force()
+        Logger.debug(ini_path)
+        if not ini_path:
+            self.status_bar.config(text="Import canceled.")
+            return
+        try:
+            with open(ini_path, 'r', encoding='utf-8') as configfile:
+                config.read_file(configfile)
+        except Exception as e:
+            self.status_bar.config(text=f"Import failed: {e}")
+            return
+        self.tree.delete(*self.tree.get_children())
+        for key in config.sections():
+            self.tree.insert("", tk.END, values=(key, config[key]['variants']))
