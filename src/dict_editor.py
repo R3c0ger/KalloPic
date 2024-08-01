@@ -204,6 +204,8 @@ class DictEditor:
         config = configparser.ConfigParser()
         for key, value in dictionary.items():
             config[key] = {}
+            if isinstance(value, list):
+                value = " ".join(value)
             config[key]['variants'] = value
 
         # 打开窗口让用户选择保存位置和文件名，默认位置为当前目录
