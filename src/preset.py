@@ -163,8 +163,8 @@ DIR_KEYWORD_MAP = {
     ],
     "河城荷取": [
         # 23,
-        "hecheng", "hequ", 'hchq', "hc", "hq"
-        'kawasiro", "nitori',
+        "hecheng", "hequ", 'hchq', "hc", "hq",
+        "kawasiro", "nitori",
         "hetong", "ht", "huanggua", "hg", "htzg", "lbn",
     ],
     "露米娅": [
@@ -177,7 +177,7 @@ DIR_KEYWORD_MAP = {
         # 25,
         "quanzou", "hua", "qz", "h", "qzh",
         "inubashiri", "momiji",
-        "momiji", "mmj", "gougou", "gg", "xbg", "xbl", "huahua", "hh",
+        "mmj", "gougou", "gg", "xbg", "xbl", "huahua", "hh",
     ],
     "风见幽香": [
         # 26,
