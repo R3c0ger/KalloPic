@@ -236,7 +236,7 @@ class Filter:
             child.config(width=28)
 
     def _check_dir(self):
-        Logger.debug("Directory:" + self.dir_abspath)
+        Logger.debug("Directory: " + self.dir_abspath)
         if not os.path.isdir(self.dir_abspath):
             msg = (f"The directory\n{self.dir_abspath}\ndoes not exist!"
                    if self.dir_abspath else "Please input a directory!")
