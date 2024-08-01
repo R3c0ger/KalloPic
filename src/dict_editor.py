@@ -192,6 +192,7 @@ class DictEditor:
 
     def export_dict(self, filename="DirnameShortcut"):
         """导出ini文件到当前目录"""
+        # 根据是否保存，以及用户的选择来决定导出的字典
         dictionary = Conf.DIR_KEYWORD_MAP
         if not self.saved and messagebox.askokcancel(
             "Save dictionary",
@@ -215,13 +216,19 @@ class DictEditor:
         if not save_path:
             self.status_bar.config(text="Export canceled.")
             return
-        with open(save_path, 'w', encoding='utf-8') as configfile:
-            config.write(configfile)
+
+        # 写入ini文件
+        try:
+            with open(save_path, 'w', encoding='utf-8') as configfile:
+                config.write(configfile)
+        except Exception as e:
+            self.status_bar.config(text=f"Export failed: {e}")
+            return
 
     def import_dict(self, filename="DirnameShortcut"):
         """从ini文件导入"""
         self.saved = False
-        config = configparser.ConfigParser()
+        # 打开窗口让用户选择文件，默认位置为当前目录
         ini_path = filedialog.askopenfilename(
             initialdir=".", initialfile=filename, defaultextension=".ini",
             filetypes=[("INI files", "*.ini"), ("All files", "*.*")]
@@ -231,12 +238,17 @@ class DictEditor:
         if not ini_path:
             self.status_bar.config(text="Import canceled.")
             return
+
+        # 读取ini文件
+        config = configparser.ConfigParser()
         try:
             with open(ini_path, 'r', encoding='utf-8') as configfile:
                 config.read_file(configfile)
         except Exception as e:
             self.status_bar.config(text=f"Import failed: {e}")
             return
+
+        # 清空当前列表，写入新的数据
         self.tree.delete(*self.tree.get_children())
         for key in config.sections():
             self.tree.insert("", tk.END, values=(key, config[key]['variants']))
