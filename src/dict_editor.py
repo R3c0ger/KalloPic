@@ -181,7 +181,7 @@ class DictEditor:
         new_dict = {}
         for item in self.tree.get_children():
             role, keyword = self.tree.item(item, "values")
-            new_dict[role] = keyword
+            new_dict[role] = keyword.split(" ")
         return OrderedDict(new_dict)
 
     def save_dict(self):
