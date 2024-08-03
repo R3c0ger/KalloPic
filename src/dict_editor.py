@@ -10,6 +10,26 @@ from src.config import Conf
 from src.utils.logger import Logger
 
 
+def check_dirname(dirname):
+    """检查文件夹名。文件夹不能命名为Windows或DOS保留的名称，或包含特殊字符"""
+    reserved_dirnames = [
+        "CON", "PRN", "AUX", "NUL",
+        "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+        "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+    ]
+    special_chars = r'\/:*?"<>|'
+    if dirname in reserved_dirnames:
+        return False
+    if any(c in special_chars for c in dirname):
+        return False
+    return True
+
+
+def check_keywords_str(keywords_str):
+    """检查关键字字符串，只允许其中有小写字母和空格"""
+    return all(c.islower() or c.isspace() for c in keywords_str)
+
+
 class DictEditor:
     def __init__(self, master):
         self.master = master
