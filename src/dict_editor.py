@@ -117,18 +117,18 @@ class DictEditor:
         self.tree.delete(*self.tree.get_children())
         self.status_bar.config(text="Cleared.")
 
-    def dict_to_tree(self, _dict):
+    def _dict_to_tree(self, _dict):
         self.saved = False
         self.clear_list()
         for dirname, keyword in _dict.items():
             self.tree.insert("", tk.END, values=(dirname, keyword))
 
     def read_default_dict(self):
-        self.dict_to_tree(Conf.DEFAULT_DIR_KEYWORD_MAP)
+        self._dict_to_tree(Conf.DEFAULT_DIR_KEYWORD_MAP)
         self.status_bar.config(text="Default dictionary ready.")
 
     def read_saved_dict(self):
-        self.dict_to_tree(Conf.DIR_KEYWORD_MAP)
+        self._dict_to_tree(Conf.DIR_KEYWORD_MAP)
         self.status_bar.config(text="Dictionary ready.")
 
     def add_item(self):
@@ -136,11 +136,24 @@ class DictEditor:
         if not dirname:
             self.status_bar.config(text="No directory name input. Cancelled.")
             return
+        if not check_dirname(dirname):
+            self.status_bar.config(text=f"Invalid directory name: '{dirname}'.")
+            return
+
         keywords_str = simpledialog.askstring("Input keywords", "Keywords:")
         if not keywords_str:
             self.status_bar.config(text="No keywords input. Cancelled.")
             return
+        if not check_keywords_str(keywords_str):
+            self.status_bar.config(
+                text=f"Invalid keywords: '{keywords_str}'."
+                     " Keywords must be consisted of lower"
+                     "case letters and separated by space."
+            )
+            return
+
         self.tree.insert("", tk.END, values=(dirname, keywords_str))
+        self.status_bar.config(text="Added successfully.")
         self.saved = False
 
     def delete_selected(self):
@@ -180,36 +193,65 @@ class DictEditor:
             return
         item = selected_items[0]
         current_values = self.tree.item(item, "values")
+
         new_dirname = simpledialog.askstring(
             "Edit name", "Name:", initialvalue=current_values[0])
         if not new_dirname:
             self.status_bar.config(text="No directory name input. Cancelled.")
             return
+        if not check_dirname(new_dirname):
+            self.status_bar.config(text=f"Invalid directory name: '{new_dirname}'.")
+            return
+
         new_keywords_str = simpledialog.askstring(
             "Edit keyword", "Keywords:", initialvalue=current_values[1])
         if not new_keywords_str:
             self.status_bar.config(text="No keywords input. Cancelled.")
             return
+        if not check_keywords_str(new_keywords_str):
+            self.status_bar.config(
+                text=f"Invalid keywords: '{new_keywords_str}'."
+                     " Keywords must be consisted of lower"
+                     "case letters and separated by space."
+            )
+            return
+
         # 若均未修改，则不更新
         if new_dirname == current_values[0] and new_keywords_str == current_values[1]:
             self.status_bar.config(text="No changes made.")
             return
+
         self.tree.item(item, values=(new_dirname, new_keywords_str))
         self.status_bar.config(text="The selected row has been edited.")
         self.saved = False
 
-    def tree_to_ordered_dict(self):
+    def _tree_to_ordered_dict(self):
         new_dict = {}
         for item in self.tree.get_children():
             dirname, keywords_str = self.tree.item(item, "values")
+            if not check_dirname(dirname):
+                self.status_bar.config(text=f"Invalid directory name: '{dirname}'.")
+                return False
+            if not check_keywords_str(keywords_str):
+                self.status_bar.config(
+                    text=f"Invalid keywords: '{keywords_str}'."
+                         " Keywords must be consisted of lower"
+                         "case letters and separated by space."
+                )
+                return False
             new_dict[dirname] = keywords_str.split(" ")
         return OrderedDict(new_dict)
 
     def save_dict(self):
         """保存到全局变量"""
         self.saved = True
-        Conf.DIR_KEYWORD_MAP = self.tree_to_ordered_dict()
-        self.status_bar.config(text="Dictionary saved.")
+        dir_keyword_map = self._tree_to_ordered_dict()
+        if not dir_keyword_map:
+            pre_msg = self.status_bar.cget("text")
+            self.status_bar.config(text=f"Save failed. {pre_msg}")
+            return
+        Conf.DIR_KEYWORD_MAP = dir_keyword_map
+        self.status_bar.config(text="Dictionary saved successfully.")
 
     def export_dict(self, filename="DirnameShortcut"):
         """导出ini文件到当前目录"""
@@ -220,7 +262,11 @@ class DictEditor:
             "Do you want to export the unsaved dictionary?\n"
             "If no, the last saved dictionary will be exported."
         ):
-            dictionary = self.tree_to_ordered_dict()
+            dictionary = self._tree_to_ordered_dict()
+        if not dictionary:
+            pre_msg = self.status_bar.cget("text")
+            self.status_bar.config(text=f"Export canceled. {pre_msg}")
+            return
 
         config = configparser.ConfigParser()
         for key, value in dictionary.items():
@@ -247,6 +293,7 @@ class DictEditor:
         except Exception as e:
             self.status_bar.config(text=f"Export failed: {e}")
             return
+        self.status_bar.config(text="Exported successfully.")
 
     def import_dict(self, filename="DirnameShortcut"):
         """从ini文件导入"""
@@ -273,5 +320,13 @@ class DictEditor:
         # 清空当前列表，写入新的数据
         self.tree.delete(*self.tree.get_children())
         for key in config.sections():
-            self.tree.insert("", tk.END, values=(key, config[key]['variants']))
+            dirname, keywords_str = key, config[key]['variants']
+            if not check_dirname(dirname):
+                self.status_bar.config(text=f"Import Failed. Invalid directory name: '{dirname}'.")
+                return
+            if not check_keywords_str(keywords_str):
+                self.status_bar.config(text=f"Import Failed. Invalid keywords: '{keywords_str}'.")
+                return
+            self.tree.insert("", tk.END, values=(dirname, keywords_str))
+        self.status_bar.config(text="Imported successfully.")
         self.saved = False
