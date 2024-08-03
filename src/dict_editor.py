@@ -132,19 +132,17 @@ class DictEditor:
         self.status_bar.config(text="Dictionary ready.")
 
     def add_item(self):
-        self.saved = False
         dirname = simpledialog.askstring("Input name", "Name:")
         if not dirname:
-            self.saved = True
+            self.status_bar.config(text="Invalid directory name.")
             return
         keywords_str = simpledialog.askstring("Input keywords", "Keywords:")
         if not keywords_str:
-            self.saved = True
             return
         self.tree.insert("", tk.END, values=(dirname, keywords_str))
+        self.saved = False
 
     def delete_selected(self):
-        self.saved = False
         selected_items = self.tree.selection()
         if not selected_items:
             self.status_bar.config(text="Please select the row(s) to delete.")
@@ -152,9 +150,9 @@ class DictEditor:
         for item in selected_items:
             self.tree.delete(item)
         self.status_bar.config(text="The selected row(s) have been deleted.")
+        self.saved = False
 
     def move_item(self, direction):
-        self.saved = False
         selected_items = self.tree.selection()
         if not selected_items:
             self.status_bar.config(text="Please select the row(s) to move.")
@@ -172,9 +170,9 @@ class DictEditor:
                     self.tree.move(item, self.tree.parent(next_item), self.tree.index(next_item))
 
         self.status_bar.config(text=f"Moved {len(selected_items)} row(s) {direction}.")
+        self.saved = False
 
     def edit_item(self):
-        self.saved = False
         selected_items = self.tree.selection()
         if len(selected_items) != 1:
             self.status_bar.config(text="Please choose one row to edit.")
@@ -184,20 +182,17 @@ class DictEditor:
         new_dirname = simpledialog.askstring(
             "Edit name", "Name:", initialvalue=current_values[0])
         if not new_dirname:
-            self.saved = True
             return
         new_keywords_str = simpledialog.askstring(
             "Edit keyword", "Keywords:", initialvalue=current_values[1])
         if not new_keywords_str:
-            if new_dirname == current_values[0]:
-                self.saved = True
             return
-        else:
-            if new_dirname == current_values[0] and new_keywords_str == current_values[1]:
-                self.saved = True
-                return
+        # 若均未修改，则不更新
+        if new_dirname == current_values[0] and new_keywords_str == current_values[1]:
+            return
         self.tree.item(item, values=(new_dirname, new_keywords_str))
         self.status_bar.config(text="The selected row has been edited.")
+        self.saved = False
 
     def tree_to_ordered_dict(self):
         new_dict = {}
@@ -251,7 +246,6 @@ class DictEditor:
 
     def import_dict(self, filename="DirnameShortcut"):
         """从ini文件导入"""
-        self.saved = False
         # 打开窗口让用户选择文件，默认位置为当前目录
         ini_path = filedialog.askopenfilename(
             initialdir=".", initialfile=filename, defaultextension=".ini",
@@ -276,3 +270,4 @@ class DictEditor:
         self.tree.delete(*self.tree.get_children())
         for key in config.sections():
             self.tree.insert("", tk.END, values=(key, config[key]['variants']))
+        self.saved = False
