@@ -33,12 +33,12 @@ class DictEditor:
         self.tree_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         # 添加Treeview
         self.tree = ttk.Treeview(
-            self.tree_frame, columns=("Role", "Keyword"), show="headings",
+            self.tree_frame, columns=("Dirname", "Keyword"), show="headings",
             yscrollcommand=self.tree_scrollbar.set
         )
-        self.tree.heading("Role", text="Role name")
+        self.tree.heading("Dirname", text="Directory name")
         self.tree.heading("Keyword", text="Key words")
-        self.tree.column("Role", width=150, minwidth=100, stretch=False, anchor=tk.W)
+        self.tree.column("Dirname", width=150, minwidth=100, stretch=False, anchor=tk.W)
         self.tree.column("Keyword", stretch=True, anchor=tk.W)
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         # 绑定Scrollbar到Treeview
@@ -100,8 +100,8 @@ class DictEditor:
     def dict_to_tree(self, _dict):
         self.saved = False
         self.clear_list()
-        for role, keyword in _dict.items():
-            self.tree.insert("", tk.END, values=(role, keyword))
+        for dirname, keyword in _dict.items():
+            self.tree.insert("", tk.END, values=(dirname, keyword))
 
     def read_default_dict(self):
         self.dict_to_tree(Conf.DEFAULT_DIR_KEYWORD_MAP)
@@ -113,15 +113,15 @@ class DictEditor:
 
     def add_item(self):
         self.saved = False
-        role = simpledialog.askstring("Input name", "Name:")
-        if not role:
+        dirname = simpledialog.askstring("Input name", "Name:")
+        if not dirname:
             self.saved = True
             return
-        keyword = simpledialog.askstring("Input keyword", "Keyword:")
-        if not keyword:
+        keywords_str = simpledialog.askstring("Input keywords", "Keywords:")
+        if not keywords_str:
             self.saved = True
             return
-        self.tree.insert("", tk.END, values=(role, keyword))
+        self.tree.insert("", tk.END, values=(dirname, keywords_str))
 
     def delete_selected(self):
         self.saved = False
@@ -161,27 +161,29 @@ class DictEditor:
             return
         item = selected_items[0]
         current_values = self.tree.item(item, "values")
-        new_role = simpledialog.askstring("Edit name", "Name:", initialvalue=current_values[0])
-        if not new_role:
+        new_dirname = simpledialog.askstring(
+            "Edit name", "Name:", initialvalue=current_values[0])
+        if not new_dirname:
             self.saved = True
             return
-        new_keyword = simpledialog.askstring("Edit keyword", "Keyword:", initialvalue=current_values[1])
-        if not new_keyword:
-            if new_role == current_values[0]:
+        new_keywords_str = simpledialog.askstring(
+            "Edit keyword", "Keywords:", initialvalue=current_values[1])
+        if not new_keywords_str:
+            if new_dirname == current_values[0]:
                 self.saved = True
             return
         else:
-            if new_role == current_values[0] and new_keyword == current_values[1]:
+            if new_dirname == current_values[0] and new_keywords_str == current_values[1]:
                 self.saved = True
                 return
-        self.tree.item(item, values=(new_role, new_keyword))
+        self.tree.item(item, values=(new_dirname, new_keywords_str))
         self.status_bar.config(text="The selected row has been edited.")
 
     def tree_to_ordered_dict(self):
         new_dict = {}
         for item in self.tree.get_children():
-            role, keyword = self.tree.item(item, "values")
-            new_dict[role] = keyword.split(" ")
+            dirname, keywords_str = self.tree.item(item, "values")
+            new_dict[dirname] = keywords_str.split(" ")
         return OrderedDict(new_dict)
 
     def save_dict(self):
