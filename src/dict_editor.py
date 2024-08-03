@@ -134,10 +134,11 @@ class DictEditor:
     def add_item(self):
         dirname = simpledialog.askstring("Input name", "Name:")
         if not dirname:
-            self.status_bar.config(text="Invalid directory name.")
+            self.status_bar.config(text="No directory name input. Cancelled.")
             return
         keywords_str = simpledialog.askstring("Input keywords", "Keywords:")
         if not keywords_str:
+            self.status_bar.config(text="No keywords input. Cancelled.")
             return
         self.tree.insert("", tk.END, values=(dirname, keywords_str))
         self.saved = False
@@ -182,13 +183,16 @@ class DictEditor:
         new_dirname = simpledialog.askstring(
             "Edit name", "Name:", initialvalue=current_values[0])
         if not new_dirname:
+            self.status_bar.config(text="No directory name input. Cancelled.")
             return
         new_keywords_str = simpledialog.askstring(
             "Edit keyword", "Keywords:", initialvalue=current_values[1])
         if not new_keywords_str:
+            self.status_bar.config(text="No keywords input. Cancelled.")
             return
         # 若均未修改，则不更新
         if new_dirname == current_values[0] and new_keywords_str == current_values[1]:
+            self.status_bar.config(text="No changes made.")
             return
         self.tree.item(item, values=(new_dirname, new_keywords_str))
         self.status_bar.config(text="The selected row has been edited.")
