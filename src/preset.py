@@ -157,7 +157,7 @@ DIR_KEYWORD_MAP = {
     "藤原妹红": [
         # 22,
         "tengyuan", "meihong", "tymh", "ty", "mh",
-        "Huziwara", "Mokou", "hzwr", "mk",
+        "huziwara", "mokou", "hzwr", "mk",
         "yemen", "ymh", "mokotan", "mogutan", "mgt", "bsn",
         "busi", "bsz", "bs", "zhulin", "zl",
     ],
