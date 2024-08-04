@@ -53,11 +53,13 @@ class DictEditor:
         self.tree_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         # 添加Treeview
         self.tree = ttk.Treeview(
-            self.tree_frame, columns=("Dirname", "Keyword"), show="headings",
+            self.tree_frame, columns=("Order", "Dirname", "Keyword"), show="headings",
             yscrollcommand=self.tree_scrollbar.set
         )
+        self.tree.heading("Order", text="Order")
         self.tree.heading("Dirname", text="Directory name")
         self.tree.heading("Keyword", text="Key words")
+        self.tree.column("Order", width=50, minwidth=50, stretch=False, anchor=tk.W)
         self.tree.column("Dirname", width=150, minwidth=100, stretch=False, anchor=tk.W)
         self.tree.column("Keyword", stretch=True, anchor=tk.W)
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -82,10 +84,10 @@ class DictEditor:
         self.clear_button = ttk.Button(self.button_frame, text="Clear", command=self.clear_list)
         self.clear_button.pack(side=tk.TOP, padx=5, pady=5)
         self.read_saved_button = ttk.Button(
-            self.button_frame, text="Read saved\n    (Ctrl+R)", command=self.read_saved_dict)
+            self.button_frame, text="Read saved(Ctrl+R)", command=self.read_saved_dict)
         self.read_saved_button.pack(side=tk.TOP, padx=5, pady=5)
         self.read_default_button = ttk.Button(
-            self.button_frame, text="Read Default\n    (Ctrl+D)", command=self.read_default_dict)
+            self.button_frame, text="Read Default(Ctrl+D)", command=self.read_default_dict)
         self.read_default_button.pack(side=tk.TOP, padx=5, pady=5)
         self.save_button = ttk.Button(self.button_frame, text="Save(Ctrl+S)", command=self.save_dict)
         self.save_button.pack(side=tk.TOP, padx=5, pady=5)
@@ -120,8 +122,8 @@ class DictEditor:
     def _dict_to_tree(self, _dict):
         self.saved = False
         self.clear_list()
-        for dirname, keyword in _dict.items():
-            self.tree.insert("", tk.END, values=(dirname, keyword))
+        for order, (dirname, keyword) in enumerate(_dict.items()):
+            self.tree.insert("", tk.END, values=(order, dirname, keyword))
 
     def read_default_dict(self):
         self._dict_to_tree(Conf.DEFAULT_DIR_KEYWORD_MAP)
@@ -152,9 +154,15 @@ class DictEditor:
             )
             return
 
-        self.tree.insert("", tk.END, values=(dirname, keywords_str))
+        order = len(self.tree.get_children())
+        self.tree.insert("", tk.END, values=(order, dirname, keywords_str))
         self.status_bar.config(text="Added successfully.")
         self.saved = False
+
+    def _refresh_order(self):
+        """重新排列Order列的值"""
+        for i, item in enumerate(self.tree.get_children()):
+            self.tree.item(item, values=(i, *self.tree.item(item, "values")[1:]))
 
     def delete_selected(self):
         selected_items = self.tree.selection()
@@ -164,6 +172,7 @@ class DictEditor:
         for item in selected_items:
             self.tree.delete(item)
         self.status_bar.config(text="The selected row(s) have been deleted.")
+        self._refresh_order()
         self.saved = False
 
     def move_item(self, direction):
@@ -184,6 +193,7 @@ class DictEditor:
                     self.tree.move(item, self.tree.parent(next_item), self.tree.index(next_item))
 
         self.status_bar.config(text=f"Moved {len(selected_items)} row(s) {direction}.")
+        self._refresh_order()
         self.saved = False
 
     def edit_item(self):
@@ -195,7 +205,7 @@ class DictEditor:
         current_values = self.tree.item(item, "values")
 
         new_dirname = simpledialog.askstring(
-            "Edit name", "Name:", initialvalue=current_values[0])
+            "Edit name", "Name:", initialvalue=current_values[1])
         if not new_dirname:
             self.status_bar.config(text="No directory name input. Cancelled.")
             return
@@ -204,7 +214,7 @@ class DictEditor:
             return
 
         new_keywords_str = simpledialog.askstring(
-            "Edit keyword", "Keywords:", initialvalue=current_values[1])
+            "Edit keyword", "Keywords:", initialvalue=current_values[2])
         if not new_keywords_str:
             self.status_bar.config(text="No keywords input. Cancelled.")
             return
@@ -221,14 +231,14 @@ class DictEditor:
             self.status_bar.config(text="No changes made.")
             return
 
-        self.tree.item(item, values=(new_dirname, new_keywords_str))
+        self.tree.item(item, values=(current_values[0], new_dirname, new_keywords_str))
         self.status_bar.config(text="The selected row has been edited.")
         self.saved = False
 
     def _tree_to_ordered_dict(self):
         new_dict = {}
         for item in self.tree.get_children():
-            dirname, keywords_str = self.tree.item(item, "values")
+            _, dirname, keywords_str = self.tree.item(item, "values")
             if not check_dirname(dirname):
                 self.status_bar.config(text=f"Invalid directory name: '{dirname}'.")
                 return False
@@ -319,7 +329,7 @@ class DictEditor:
 
         # 清空当前列表，写入新的数据
         self.tree.delete(*self.tree.get_children())
-        for key in config.sections():
+        for order, key in enumerate(config.sections()):
             dirname, keywords_str = key, config[key]['variants']
             if not check_dirname(dirname):
                 self.status_bar.config(text=f"Import Failed. Invalid directory name: '{dirname}'.")
@@ -327,6 +337,6 @@ class DictEditor:
             if not check_keywords_str(keywords_str):
                 self.status_bar.config(text=f"Import Failed. Invalid keywords: '{keywords_str}'.")
                 return
-            self.tree.insert("", tk.END, values=(dirname, keywords_str))
+            self.tree.insert("", tk.END, values=(order, dirname, keywords_str))
         self.status_bar.config(text="Imported successfully.")
         self.saved = False
