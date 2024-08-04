@@ -1,7 +1,5 @@
 #!usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
-
 
 def gen_gradient_textline(textline, start_color=None, end_color=None):
     """
