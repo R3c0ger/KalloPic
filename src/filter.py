@@ -78,14 +78,14 @@ class Filter:
         # 打开文件夹
         self.open_dir_button = ttk.Button(
             self.firstline_frame, text="Open the folder",
-            command=self.open_dir, width=20
+            command=lambda: os.startfile(self.dir_abspath), width=20
         )
         self.open_dir_button.pack(side=tk.RIGHT, padx=5)
         # 所有文件统计信息文本框
         self.count_files_rst = tk.Text(self.stat_group, height=3)
         self.count_files_rst.pack(padx=5, pady=5, expand=1, fill=tk.X)
         self.count_files_rst.insert(tk.END, self.file_stat[0])
-        self.count_files_rst.config(state=tk.DISABLED, wrap=tk.NONE, relief=tk.FLAT)
+        self.count_files_rst.config(state=tk.DISABLED, relief=tk.FLAT)
         # 图片统计信息标签
         self.count_imgs_label = ttk.Label(self.stat_group, text="Image files statistics:")
         self.count_imgs_label.pack(padx=5, anchor=tk.W)
@@ -93,7 +93,7 @@ class Filter:
         self.count_imgs_rst = tk.Text(self.stat_group, height=1)
         self.count_imgs_rst.pack(padx=5, pady=5, expand=1, fill=tk.X)
         self.count_imgs_rst.insert(tk.END, self._get_img_stat())
-        self.count_imgs_rst.config(state=tk.DISABLED, wrap=tk.NONE, relief=tk.FLAT)
+        self.count_imgs_rst.config(state=tk.DISABLED, relief=tk.FLAT)
 
         # 过滤功能组件，三栏，最左边一栏为功能按钮，中间一栏为功能参数配置，最右边一栏为输出结果文本框
         self.filter_group = ttk.LabelFrame(master, text="Filter functions")
@@ -245,20 +245,6 @@ class Filter:
         else:
             return True
 
-    def open_dir(self):
-        os.startfile(self.dir_abspath)
-
-    def _add_linefeed_to_str(self, raw_str):
-        """根据窗口进行格式化（换行）"""
-        line_maxlen = math.floor((math.floor((self.master.winfo_width() * 1.25) - 30) / 9))
-        rst_str_with_linefeed = ""
-        for i in range(0, len(raw_str), line_maxlen):
-            if len(raw_str) - i > line_maxlen:
-                rst_str_with_linefeed += f"{raw_str[i:i + line_maxlen]}\n"
-            else:
-                rst_str_with_linefeed += raw_str[i:]
-        return rst_str_with_linefeed
-
     def _count_files(self, recursive=True):
         """统计当前文件夹下所有文件数、文件类型及各自的数量"""
         if not recursive:
@@ -291,7 +277,6 @@ class Filter:
             file_suffix = " (No suffix)" if not file_type[0] else file_type[0]
             line = f"{file_type[1]} {file_suffix[1:]}; "
             rst_str += line
-        rst_str = self._add_linefeed_to_str(rst_str)
         Logger.debug(rst_str)
         return rst_str, file_types
 
@@ -307,7 +292,6 @@ class Filter:
         for img_type in img_types:
             line = f"{img_type[1]} {img_type[0][1:]}; "
             rst_str += line
-        rst_str = self._add_linefeed_to_str(rst_str)
         Logger.debug(rst_str)
         return rst_str
 
