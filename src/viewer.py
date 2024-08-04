@@ -560,6 +560,7 @@ class ImageViewer:
         self.help_window = tk.Toplevel(self.master)
         self.help_window.title("Help")
         self.help_window.geometry("600x400")
+        self.help_window.wm_iconbitmap(Conf.LOGO_ICON_PATH)
         self.help_window.focus()  # 防止信息窗口挡着
 
         tree_frame = ttk.Frame(self.help_window)
@@ -589,7 +590,7 @@ class ImageViewer:
         # 添加版本信息
         version_label = ttk.Label(
             self.help_window,
-            text=f"{Conf.PROJECT_NAME}{Conf.VERSION}",
+            text=f"{Conf.PROJECT_NAME} - {Conf.VERSION}",
             anchor="center"
         )
         version_label.pack(pady=10)
