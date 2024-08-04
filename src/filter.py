@@ -540,14 +540,17 @@ class Filter:
         self._clear_particular_frame()
         # 最小文件大小
         self.min_size_label = ttk.Label(self.particular_frame, text="Minimum size(KB):")
-        self.min_size_entry = ttk.Entry(self.particular_frame)
+        self.min_size_spinbox = ttk.Spinbox(
+            self.particular_frame,
+            from_=0, to=1000000000, increment=1, width=18
+        )
         self.min_size_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.min_size_entry.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
-        self.min_size_entry.insert(0, str(self.min_size_kb))
+        self.min_size_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
+        self.min_size_spinbox.insert(0, str(self.min_size_kb))
         # 过滤小图片按钮
         self.start_btn = ttk.Button(
             self.particular_frame, text="Start Filter",
-            command=lambda: self.filter_small_imgs(float(self.min_size_entry.get()))
+            command=lambda: self.filter_small_imgs(float(self.min_size_spinbox.get()))
         )
         self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
 
@@ -641,14 +644,17 @@ class Filter:
         self._clear_particular_frame()
         # 最大分辨率比例
         self.max_res_ratio_label = ttk.Label(self.particular_frame, text="Maximum ratio:")
-        self.max_res_ratio_entry = ttk.Entry(self.particular_frame)
+        self.max_res_ratio_spinbox = ttk.Spinbox(
+            self.particular_frame,
+            from_=0, to=100, increment=0.1, width=18
+        )
         self.max_res_ratio_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.max_res_ratio_entry.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
-        self.max_res_ratio_entry.insert(0, str(self.max_res_ratio))
+        self.max_res_ratio_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
+        self.max_res_ratio_spinbox.insert(0, str(self.max_res_ratio))
         # 过滤长图按钮
         self.start_btn = ttk.Button(
             self.particular_frame, text="Start Filter",
-            command=lambda: self.filter_long_imgs(float(self.max_res_ratio_entry.get()))
+            command=lambda: self.filter_long_imgs(float(self.max_res_ratio_spinbox.get()))
         )
         self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
 
