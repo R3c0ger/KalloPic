@@ -39,7 +39,9 @@ class Config:
     # 运行配置
     LOGO_ICON_RELPATH = "resources/logo/logo.ico"
     LOGO_ICON_PATH = get_resource_path(LOGO_ICON_RELPATH)
-    DEFAULT_WIN_SIZE = "500x400"
+    DEFAULT_WIN_WIDTH = 1370
+    DEFAULT_WIN_HEIGHT = 650
+    DEFAULT_WIN_SIZE = f"{DEFAULT_WIN_WIDTH}x{DEFAULT_WIN_HEIGHT}"
     IMG_SUFFIX = (
         '.jpeg', '.JPEG',
         '.jpg', '.JPG',
