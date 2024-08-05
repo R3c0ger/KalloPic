@@ -1,4 +1,4 @@
-#!usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 def merge_intersecting_sets(unmerged_sets: list[set[str]]) -> list[set[str]]:

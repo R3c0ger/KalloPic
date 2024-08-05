@@ -1,4 +1,4 @@
-#!usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 def gen_gradient_textline(textline, start_color=None, end_color=None):
