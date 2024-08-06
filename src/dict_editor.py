@@ -60,7 +60,7 @@ class DictEditor:
         self.tree.heading("Order", text="Order")
         self.tree.heading("Dirname", text="Directory name")
         self.tree.heading("Keyword", text="Key words")
-        self.tree.column("Order", width=50, minwidth=50, stretch=False, anchor=tk.W)
+        self.tree.column("Order", width=50, minwidth=50, stretch=False, anchor="center")
         self.tree.column("Dirname", width=150, minwidth=100, stretch=False, anchor=tk.W)
         self.tree.column("Keyword", stretch=True, anchor=tk.W)
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)

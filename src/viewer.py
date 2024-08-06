@@ -577,6 +577,7 @@ class ImageViewer:
         )
         tree.heading("Key", text="Key", anchor="w")
         tree.heading("Description", text="Description", anchor="w")
+        tree.column("Key", width=100, minwidth=100, stretch=False)
         tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         # 绑定Scrollbar到Treeview
