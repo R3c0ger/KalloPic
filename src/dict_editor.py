@@ -4,9 +4,10 @@
 import configparser
 import tkinter as tk
 from collections import OrderedDict
-from tkinter import ttk, simpledialog, messagebox, filedialog
+from tkinter import ttk, messagebox, filedialog
 
 from src.config import Conf
+from src.utils.dialog import custom_ask_string
 from src.utils.logger import Logger
 
 
@@ -134,7 +135,7 @@ class DictEditor:
         self.status_bar.config(text="Dictionary ready.")
 
     def add_item(self):
-        dirname = simpledialog.askstring("Input name", "Name:")
+        dirname = custom_ask_string(self.master, "Input name", "Name:")
         if not dirname:
             self.status_bar.config(text="No directory name input. Cancelled.")
             return
@@ -142,7 +143,7 @@ class DictEditor:
             self.status_bar.config(text=f"Invalid directory name: '{dirname}'.")
             return
 
-        keywords_str = simpledialog.askstring("Input keywords", "Keywords:")
+        keywords_str = custom_ask_string(self.master, "Input keywords", "Keywords:")
         if not keywords_str:
             self.status_bar.config(text="No keywords input. Cancelled.")
             return
@@ -204,8 +205,8 @@ class DictEditor:
         item = selected_items[0]
         current_values = self.tree.item(item, "values")
 
-        new_dirname = simpledialog.askstring(
-            "Edit name", "Name:", initialvalue=current_values[1])
+        new_dirname = custom_ask_string(
+            self.master, "Edit name", "Name:", initialvalue=current_values[1])
         if not new_dirname:
             self.status_bar.config(text="No directory name input. Cancelled.")
             return
@@ -213,8 +214,8 @@ class DictEditor:
             self.status_bar.config(text=f"Invalid directory name: '{new_dirname}'.")
             return
 
-        new_keywords_str = simpledialog.askstring(
-            "Edit keyword", "Keywords:", initialvalue=current_values[2])
+        new_keywords_str = custom_ask_string(
+            self.master, "Edit keyword", "Keywords:", initialvalue=current_values[2])
         if not new_keywords_str:
             self.status_bar.config(text="No keywords input. Cancelled.")
             return
