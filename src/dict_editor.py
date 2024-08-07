@@ -250,7 +250,7 @@ class DictEditor:
                          "case letters and separated by space."
                 )
                 return False
-            new_dict[dirname] = keywords_str.split(" ")
+            new_dict[dirname] = keywords_str.split()
         return OrderedDict(new_dict)
 
     def save_dict(self):
