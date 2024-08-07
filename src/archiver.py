@@ -69,13 +69,13 @@ class Archiver(ImageViewer):
             self.button_frame,
             text="Filter",
             command=self.open_filter_window,
-            width=10
+            width=8
         )
-        self.filter_button.grid(row=0, column=13, padx=10)
+        self.filter_button.grid(row=0, column=13, padx=5)
 
         # 打开目标文件夹，选择要将图片移动的目的地址
         self.tgt_frame = ttk.Frame(master)
-        self.tgt_frame.pack(fill=tk.X)
+        self.tgt_frame.pack(fill=tk.X, pady=5)
         # 目标文件夹标签
         self.tgt_label = ttk.Label(self.tgt_frame, text="Target Folder:", width=12)
         self.tgt_label.pack(side=tk.LEFT, padx=10)
@@ -93,15 +93,15 @@ class Archiver(ImageViewer):
             width=14, state="readonly"
         )
         self.tgt_option_menu.set("Pick a character")
-        self.tgt_option_menu.pack(side=tk.LEFT)
+        self.tgt_option_menu.pack(side=tk.LEFT, padx=10)
         # 确认移动按钮
         self.tgt_move_button = ttk.Button(self.tgt_frame, text="Move", command=self.move_img)
-        self.tgt_move_button.pack(side=tk.LEFT)
+        self.tgt_move_button.pack(side=tk.LEFT, padx=10)
         # 打开配置字典窗口
         self.config_button = ttk.Button(
             self.tgt_frame, text="Config", command=self.open_config_window
         )
-        self.config_button.pack(fill=tk.X)
+        self.config_button.pack(side=tk.LEFT, padx=10)
 
         # 快捷移动输入框和备选列表
         self.input_box = None
