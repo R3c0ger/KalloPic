@@ -8,7 +8,7 @@ import sys
 from src.preset import ORDERED_DIR_KEYWORD_MAP
 
 
-# noinspection PyBroadException,PyProtectedMember
+# noinspection PyBroadException,PyProtectedMember,PyUnresolvedReferences
 def get_resource_path(relative_path):
     """Get absolute path to resource, works for dev and for PyInstaller"""
     try:
