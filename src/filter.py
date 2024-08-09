@@ -18,6 +18,7 @@ from PIL import Image
 from send2trash import send2trash
 
 from src.config import Conf
+from src.theme import apply_text_theme
 from src.utils.calc_file_size import calc_file_size
 from src.utils.logger import Logger
 from src.utils.path_set_list import merge_intersecting_sets
@@ -60,14 +61,14 @@ class Filter:
         # 初始化窗口
         self.title = "Filter"
         self.master.title(f"{self.title} - {self.dir_abspath}")
-        self.master.geometry("1000x700")
+        self.master.geometry("1000x725")
         self.master.resizable(False, False)
 
         # 统计信息
         self.file_stat = self._count_files()
         self.stat_group = ttk.LabelFrame(
             master,
-            text="File statistics of current folder (close and open again to refresh)"
+            text=" File statistics of current folder (close and open again to refresh) "
         )
         self.stat_group.pack(side=tk.TOP, padx=5, pady=5, expand=0, fill=tk.X)
         self.firstline_frame = ttk.Frame(self.stat_group)
@@ -86,6 +87,7 @@ class Filter:
         self.count_files_rst.pack(padx=5, pady=5, expand=1, fill=tk.X)
         self.count_files_rst.insert(tk.END, self.file_stat[0])
         self.count_files_rst.config(state=tk.DISABLED, relief=tk.FLAT)
+        apply_text_theme(self.count_files_rst, editable=False)
         # 图片统计信息标签
         self.count_imgs_label = ttk.Label(self.stat_group, text="Image files statistics:")
         self.count_imgs_label.pack(padx=5, anchor=tk.W)
@@ -94,9 +96,10 @@ class Filter:
         self.count_imgs_rst.pack(padx=5, pady=5, expand=1, fill=tk.X)
         self.count_imgs_rst.insert(tk.END, self._get_img_stat())
         self.count_imgs_rst.config(state=tk.DISABLED, relief=tk.FLAT)
+        apply_text_theme(self.count_imgs_rst, editable=False)
 
         # 过滤功能组件，三栏，最左边一栏为功能按钮，中间一栏为功能参数配置，最右边一栏为输出结果文本框
-        self.filter_group = ttk.LabelFrame(master, text="Filter functions")
+        self.filter_group = ttk.LabelFrame(master, text=" Filter functions ")
         self.filter_group.pack(side=tk.TOP, padx=5, pady=5, expand=1, fill=tk.BOTH)
         # 附注，注明接下来下面给出的所有功能，所筛选的图片都不包括/delete_dir中的图片
         self.note_label = ttk.Label(
@@ -116,6 +119,7 @@ class Filter:
         self.result_box.pack(side=tk.LEFT, anchor=tk.N, expand=1, fill=tk.BOTH)
         self.result_box.insert(tk.END, "Response will be shown here.")
         self.result_box.config(relief=tk.SUNKEN)
+        apply_text_theme(self.result_box)
         # 输出结果框的滚动条
         self.scrollbar = ttk.Scrollbar(self.filter_group, command=self.result_box.yview)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -157,83 +161,83 @@ class Filter:
             self.func_frame, text="Count images",
             command=self.count_img_in_dir
         )
-        self.count_img_btn.pack(side=tk.TOP, anchor=tk.W)
+        self.count_img_btn.pack(side=tk.TOP, padx=5, pady=1)
         # 2. 提取图片
         self.extract_img_btn = ttk.Button(
             self.func_frame, text="Extract images >",
             command=self._show_extract_img_param
         )
-        self.extract_img_btn.pack(side=tk.TOP, anchor=tk.W)
+        self.extract_img_btn.pack(side=tk.TOP, padx=5, pady=1)
         # 3. 清理当前文件夹下所有空文件夹
         self.clean_empty_dirs_btn = ttk.Button(
             self.func_frame, text="Clean empty folders",
             command=self.clean_empty_dirs
         )
-        self.clean_empty_dirs_btn.pack(side=tk.TOP, anchor=tk.W)
+        self.clean_empty_dirs_btn.pack(side=tk.TOP, padx=5, pady=1)
         # 4. 过滤GIF图片
         self.filter_gif_btn = ttk.Button(
             self.func_frame, text="Filter GIF images",
             command=self.filter_gif
         )
-        self.filter_gif_btn.pack(side=tk.TOP, anchor=tk.W)
+        self.filter_gif_btn.pack(side=tk.TOP, padx=5, pady=1)
         # 5. 删除文件大小较小图片
         self.filter_small_imgs_btn = ttk.Button(
             self.func_frame, text="Filter small images >",
             command=self._show_filter_small_imgs_param
         )
-        self.filter_small_imgs_btn.pack(side=tk.TOP, anchor=tk.W)
+        self.filter_small_imgs_btn.pack(side=tk.TOP, padx=5, pady=1)
         # 6. 删除分辨率较小图片
         self.filter_low_size_imgs_btn = ttk.Button(
             self.func_frame, text="Filter low size images >",
             command=self._show_filter_low_size_imgs_param
         )
-        self.filter_low_size_imgs_btn.pack(side=tk.TOP, anchor=tk.W)
+        self.filter_low_size_imgs_btn.pack(side=tk.TOP, padx=5, pady=1)
         # 7. 删除过高图片
         self.filter_high_imgs_btn = ttk.Button(
             self.func_frame, text="Filter high images >",
             command=self._show_filter_high_imgs_param
         )
-        self.filter_high_imgs_btn.pack(side=tk.TOP, anchor=tk.W)
+        self.filter_high_imgs_btn.pack(side=tk.TOP, padx=5, pady=1)
         # 8. 删除长图
         self.filter_long_imgs_btn = ttk.Button(
             self.func_frame, text="Filter long images >",
             command=self._show_filter_long_imgs_param
         )
-        self.filter_long_imgs_btn.pack(side=tk.TOP, anchor=tk.W)
+        self.filter_long_imgs_btn.pack(side=tk.TOP, padx=5, pady=1)
         # 9. 删除文件名相同的图片
         self.filter_samename_btn = ttk.Button(
             self.func_frame, text="Filter same name images >",
             command=self._show_filter_samename_param
         )
-        self.filter_samename_btn.pack(side=tk.TOP, anchor=tk.W)
+        self.filter_samename_btn.pack(side=tk.TOP, padx=5, pady=1)
         # 10. 删除低饱和度图片
         self.filter_low_saturation_btn = ttk.Button(
             self.func_frame, text="Filter low saturation images >",
             command=self._show_filter_low_saturation_param
         )
-        self.filter_low_saturation_btn.pack(side=tk.TOP, anchor=tk.W)
+        self.filter_low_saturation_btn.pack(side=tk.TOP, padx=5, pady=1)
         # 11. 删除相似图片（哈希）
         self.filter_similar_imgs_hash_btn = ttk.Button(
             self.func_frame, text="Filter similar images (Hash) >",
             command=self._show_filter_similar_imgs_hash_param
         )
-        self.filter_similar_imgs_hash_btn.pack(side=tk.TOP, anchor=tk.W)
+        self.filter_similar_imgs_hash_btn.pack(side=tk.TOP, padx=5, pady=1)
         # 12. 删除相似图片（余弦相似度）
         self.filter_similar_imgs_cos_btn = ttk.Button(
             self.func_frame, text="Filter similar images (Cosine) >",
             command=self._show_filter_similar_imgs_cos_param
         )
-        self.filter_similar_imgs_cos_btn.pack(side=tk.TOP, anchor=tk.W)
+        self.filter_similar_imgs_cos_btn.pack(side=tk.TOP, padx=5, pady=1)
         # 13. 删除相似图片（均方误差）
         self.filter_similar_imgs_mse_btn = ttk.Button(
             self.func_frame, text="Filter similar images (MSE) >",
             command=self._show_filter_similar_imgs_mse_param
         )
-        self.filter_similar_imgs_mse_btn.pack(side=tk.TOP, anchor=tk.W)
+        self.filter_similar_imgs_mse_btn.pack(side=tk.TOP, padx=5, pady=1)
         # 设置所有的功能按钮的宽度一致，文字左对齐
         child: ttk.Button
         for child in self.func_frame.winfo_children():
-            child.config(width=28)
+            child.config(width=28, style='LeftAligned.TButton')
 
     def _check_dir(self):
         Logger.debug("Directory: " + self.dir_abspath)
@@ -384,22 +388,22 @@ class Filter:
         self.src_dir_label = ttk.Label(self.particular_frame, text="Source directory:")
         self.src_dir_entry = ttk.Entry(self.particular_frame)
         self.open_src_dir_btn = ttk.Button(
-            self.particular_frame, text="Select folder", width=20,
+            self.particular_frame, text="Select folder",
             command=lambda: self.input_dir(self.src_dir_entry)
         )
         self.src_dir_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.open_src_dir_btn.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.open_src_dir_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, fill=tk.X)
         self.src_dir_entry.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
         self.src_dir_entry.insert(0, self.dir_abspath)
         # 目的文件夹
         self.dest_dir_label = ttk.Label(self.particular_frame, text="Destination directory:")
         self.dest_dir_entry = ttk.Entry(self.particular_frame)
         self.open_dest_dir_btn = ttk.Button(
-            self.particular_frame, text="Select folder", width=20,
+            self.particular_frame, text="Select folder",
             command=lambda: self.input_dir(self.dest_dir_entry)
         )
         self.dest_dir_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.open_dest_dir_btn.pack(side=tk.TOP, anchor=tk.W, padx=5)
+        self.open_dest_dir_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, fill=tk.X)
         self.dest_dir_entry.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
         self.dest_dir_entry.insert(0, self.dir_abspath)
         # 提取图片按钮
@@ -409,7 +413,7 @@ class Filter:
                 self.dest_dir_entry.get(), self.src_dir_entry.get()
             )
         )
-        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
 
     def clean_empty_dirs(self):
         """清理空文件夹"""
@@ -552,7 +556,7 @@ class Filter:
             self.particular_frame, text="Start Filter",
             command=lambda: self.filter_small_imgs(float(self.min_size_spinbox.get()))
         )
-        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
 
     def filter_low_size_imgs(self, min_size_pixel: int = None):
         """删除垂直和水平分辨率均低于预设值的图片"""
@@ -577,14 +581,14 @@ class Filter:
             from_=0, to=10000, increment=1, width=18
         )
         self.min_size_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.min_size_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.min_size_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
         self.min_size_spinbox.insert(0, str(self.min_size_pixel))
         # 过滤低分辨率图片按钮
         self.start_btn = ttk.Button(
             self.particular_frame, text="Start Filter",
             command=lambda: self.filter_low_size_imgs(int(self.min_size_spinbox.get()))
         )
-        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
 
     def filter_high_imgs(self, max_height: int = None):
         """删除图片高度超过预设值的图片"""
@@ -609,14 +613,14 @@ class Filter:
             from_=0, to=10000, increment=1, width=18
         )
         self.max_height_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.max_height_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.max_height_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
         self.max_height_spinbox.insert(0, str(self.max_height))
         # 过滤高图片按钮
         self.start_btn = ttk.Button(
             self.particular_frame, text="Start Filter",
             command=lambda: self.filter_high_imgs(int(self.max_height_spinbox.get()))
         )
-        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
 
     def filter_long_imgs(self, max_res_ratio: float = None):
         """删除长图，即长宽比超过预设值的图片"""
@@ -656,7 +660,7 @@ class Filter:
             self.particular_frame, text="Start Filter",
             command=lambda: self.filter_long_imgs(float(self.max_res_ratio_spinbox.get()))
         )
-        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
 
     def filter_samename(self, keep_largest: bool = None):
         """删去无扩展名时文件名重复或者文件名之间相差"_tmb"的图片"""
@@ -717,7 +721,7 @@ class Filter:
             self.particular_frame, text="Start Filter",
             command=lambda: self.filter_samename(self.keep_largest_var.get())
         )
-        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
 
     def _multitask_gen_imgdict(
         self,
@@ -751,7 +755,7 @@ class Filter:
             self.particular_frame, values=["serial", "thread", "multiprocess"], width=15
         )
         self.multitask_method_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.multitask_method_combobox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.multitask_method_combobox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
         self.multitask_method_combobox.set(self.multitask_method)
         # 运行线程数
         self.runner_num_label = ttk.Label(self.particular_frame, text="Runner number:")
@@ -760,7 +764,7 @@ class Filter:
             from_=1, to=16, increment=1, width=18
         )
         self.runner_num_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.runner_num_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.runner_num_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
         self.runner_num_spinbox.insert(0, str(self.runner_num))
 
     def filter_low_saturation(
@@ -811,7 +815,7 @@ class Filter:
             from_=0, to=1, increment=0.01, width=18
         )
         self.max_sat_ratio_hist_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.max_sat_ratio_hist_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.max_sat_ratio_hist_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
         self.max_sat_ratio_hist_spinbox.insert(0, str(self.max_sat_ratio_hist))
         # 均值饱和度比例
         self.max_sat_ratio_mean_label = ttk.Label(self.particular_frame, text="Maximum mean ratio:")
@@ -820,7 +824,7 @@ class Filter:
             from_=0, to=1, increment=0.01, width=18
         )
         self.max_sat_ratio_mean_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.max_sat_ratio_mean_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.max_sat_ratio_mean_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
         self.max_sat_ratio_mean_spinbox.insert(0, str(self.max_sat_ratio_mean))
         # 饱和度阈值
         self.sat_threshold_label = ttk.Label(self.particular_frame, text="Saturation threshold:")
@@ -829,7 +833,7 @@ class Filter:
             from_=0, to=10, increment=1, width=18
         )
         self.sat_threshold_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.sat_threshold_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.sat_threshold_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
         self.sat_threshold_spinbox.insert(0, str(self.sat_threshold))
         # 均值修正
         self.mean_refine_var = tk.BooleanVar()
@@ -853,7 +857,7 @@ class Filter:
                 runner_num=int(self.runner_num_spinbox.get())
             )
         )
-        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
 
     def _filter_similar_imgs(
         self,
@@ -934,7 +938,7 @@ class Filter:
             from_=0, to=100, increment=1, width=18
         )
         self.max_hash_dist_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.max_hash_dist_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.max_hash_dist_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
         self.max_hash_dist_spinbox.insert(0, str(self.max_hash_dist))
         # 哈希函数
         self.hash_func_label = ttk.Label(self.particular_frame, text="Hash function:")
@@ -942,7 +946,7 @@ class Filter:
             self.particular_frame, values=list(HashFunc), width=15
         )
         self.hash_func_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.hash_func_combobox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.hash_func_combobox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
         self.hash_func_combobox.set(self.hash_func)
         # 哈希大小
         self.hash_size_label = ttk.Label(self.particular_frame, text="Hash size:")
@@ -951,7 +955,7 @@ class Filter:
             from_=1, to=64, increment=1, width=18
         )
         self.hash_size_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.hash_size_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.hash_size_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
         self.hash_size_spinbox.insert(0, str(self.hash_size))
         # 多任务配置
         self._show_multitask_config()
@@ -966,7 +970,7 @@ class Filter:
                 int(self.runner_num_spinbox.get())
             )
         )
-        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
 
     def filter_similar_imgs_cos(
         self,
@@ -994,7 +998,7 @@ class Filter:
             from_=0, to=1, increment=0.01, width=18
         )
         self.min_cos_dist_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.min_cos_dist_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.min_cos_dist_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
         self.min_cos_dist_spinbox.insert(0, str(self.min_cos_dist))
         # 多任务配置
         self._show_multitask_config()
@@ -1007,7 +1011,7 @@ class Filter:
                 int(self.runner_num_spinbox.get())
             )
         )
-        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
 
     def filter_similar_imgs_mse(
         self,
@@ -1035,7 +1039,7 @@ class Filter:
             from_=0, to=10000, increment=1, width=18
         )
         self.max_mse_label.pack(side=tk.TOP, anchor=tk.W, padx=5)
-        self.max_mse_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.max_mse_spinbox.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
         self.max_mse_spinbox.insert(0, str(self.max_mse))
         # 多任务配置
         self._show_multitask_config()
@@ -1048,4 +1052,4 @@ class Filter:
                 int(self.runner_num_spinbox.get())
             )
         )
-        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5)
+        self.start_btn.pack(side=tk.TOP, anchor=tk.W, padx=5, pady=5, fill=tk.X)
