@@ -6,6 +6,7 @@ import tkinter as tk
 
 from src.archiver import Archiver as MainWindow
 from src.config import Conf
+from src.theme import apply_theme
 from src.utils.gradient_print import print_gradient_text
 from src.utils.logger import Logger
 
@@ -21,6 +22,7 @@ if __name__ == '__main__':
     root.title(Conf.PROJECT_NAME)
     root.minsize(400, 400)
     root.maxsize(1960, 1080)
+    apply_theme(root)  # 应用样式主题
 
     # 居中显示
     screen_width = root.winfo_screenwidth()
