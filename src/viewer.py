@@ -124,7 +124,7 @@ class ImageViewer:
 
         # 打开源文件夹
         self.src_frame = ttk.Frame(master)
-        self.src_frame.pack(fill=tk.X)
+        self.src_frame.pack(fill=tk.X, pady=5)
         # 源文件夹标签
         self.src_label = ttk.Label(self.src_frame, text="Source Folder:", width=12)
         self.src_label.pack(side=tk.LEFT, padx=10)
@@ -153,38 +153,38 @@ class ImageViewer:
             self.src_frame,
             text="Load Images",  # (sort by filename)
             command=self.load_dir,
-            width=15
+            width=12
         )
-        self.load_button.pack(fill=tk.X)
+        self.load_button.pack(fill=tk.X, padx=10)
 
         # 功能按钮
         self.button_frame = ttk.Frame(master)
-        self.button_frame.pack(anchor=tk.CENTER, pady=5)
+        self.button_frame.pack(anchor=tk.CENTER, pady=5, padx=10)
         # 第一张、最后一张按钮
         self.first_button = ttk.Button(self.button_frame, text="<|| First", command=self.show_first_img, width=8)
-        self.first_button.grid(row=0, column=0, padx=10)
+        self.first_button.grid(row=0, column=0, padx=5)
         self.last_button = ttk.Button(self.button_frame, text="Last ||>", command=self.show_last_img, width=8)
-        self.last_button.grid(row=0, column=3, padx=10)
+        self.last_button.grid(row=0, column=3, padx=5)
         # 上一张、下一张按钮
         self.prev_button = ttk.Button(self.button_frame, text="< Prev", command=self.show_prev_img, width=8)
-        self.prev_button.grid(row=0, column=1, padx=10)
+        self.prev_button.grid(row=0, column=1, padx=5)
         self.next_button = ttk.Button(self.button_frame, text="Next >", command=self.show_next_img, width=8)
-        self.next_button.grid(row=0, column=2, padx=10)
+        self.next_button.grid(row=0, column=2, padx=5)
         # 将当前图片移动到回收站
         self.delete_button = ttk.Button(self.button_frame, text="Delete", command=self.delete_img, width=8)
-        self.delete_button.grid(row=0, column=4, padx=10)
+        self.delete_button.grid(row=0, column=4, padx=5)
         # 输入数字跳转至对应的图片
         self.goto_frame = ttk.Frame(self.button_frame)
-        self.goto_frame.grid(row=0, column=5, padx=10)
-        self.goto_label = ttk.Label(self.goto_frame, text="Go to Image:", width=12)
+        self.goto_frame.grid(row=0, column=5, padx=5)
+        self.goto_label = ttk.Label(self.goto_frame, text="Go to: ")
         self.goto_label.pack(side=tk.LEFT)
-        self.goto_entry = ttk.Entry(self.goto_frame, width=6)
+        self.goto_entry = ttk.Entry(self.goto_frame, width=12)
         self.goto_entry.pack(side=tk.LEFT)
         self.goto_button = ttk.Button(
             self.goto_frame,
             text="Go",
             command=lambda: self.goto_img(self.goto_entry.get()),
-            width=5
+            width=4
         )
         self.goto_button.pack(side=tk.RIGHT)
         # 使用外部默认程序打开图片
@@ -192,57 +192,50 @@ class ImageViewer:
             self.button_frame,
             text="Open",
             command=lambda: os.startfile(self.img_name) if self.img_name else None,
-            width=8
         )
-        self.open_button.grid(row=0, column=6, padx=10)
+        self.open_button.grid(row=0, column=6, padx=5)
         # 查看图片信息，打开相应窗口
         self.info_button = ttk.Button(
             self.button_frame,
             text="Show Info",
             command=self.switch_show_info,
-            width=10
         )
-        self.info_button.grid(row=0, column=7, padx=10)
+        self.info_button.grid(row=0, column=7, padx=5)
         # 按时间排序，重新加载当前文件夹
         self.sort_by_time_button = ttk.Button(
             self.button_frame,
             text="Sort by Time",
             command=lambda: self.load_dir(is_reload=True, sort_by_time=True),
-            width=11
         )
-        self.sort_by_time_button.grid(row=0, column=9, padx=10)
+        self.sort_by_time_button.grid(row=0, column=9, padx=5)
         # 按文件大小排序，重新加载当前文件夹
         self.sort_by_size_button = ttk.Button(
             self.button_frame,
             text="Sort by Size",
             command=lambda: self.load_dir(is_reload=True, sort_by_size=True),
-            width=11
         )
-        self.sort_by_size_button.grid(row=0, column=10, padx=10)
+        self.sort_by_size_button.grid(row=0, column=10, padx=5)
         # 重新加载当前文件夹（不按时间或大小排序，即按文件名排序）
         self.reload_button = ttk.Button(
             self.button_frame,
             text="Reload",
             command=lambda: self.load_dir(is_reload=True),
-            width=8
         )
-        self.reload_button.grid(row=0, column=8, padx=10)
+        self.reload_button.grid(row=0, column=8, padx=5)
         # 倒序显示图片，不用重新加载源文件夹
         self.reverse_button = ttk.Button(
             self.button_frame,
             text="Reverse",
             command=self.reverse_img,
-            width=8
         )
-        self.reverse_button.grid(row=0, column=11, padx=10)
+        self.reverse_button.grid(row=0, column=11, padx=5)
         # 隐藏各栏
         self.hide_button = ttk.Button(
             self.button_frame,
             text="Hide widgets",
             command=self.hide_widgets,
-            width=13
         )
-        self.hide_button.grid(row=0, column=12, padx=10)
+        self.hide_button.grid(row=0, column=12, padx=5)
 
         # 信息通知栏，左为状态栏，右为帮助栏
         self.info_bar = ttk.Frame(master)
