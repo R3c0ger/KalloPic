@@ -427,6 +427,8 @@ class Filter:
             return
         empty_dir_list = []
         for root, dirs, files in os.walk(self.dir_abspath, topdown=False):
+            if root == self.dir_abspath:  # 源文件夹本身不应被清理
+                continue
             if not dirs and not files:
                 self._print_rst(f"{root} is an empty directory.")
                 empty_dir_list.append(root)
