@@ -508,8 +508,7 @@ class Filter:
             return file_list
 
         # file_list为list[set[str]]或list[str]时，有各自的删除方式
-        is_setlist = isinstance(file_list[0], set)
-        if is_setlist:
+        if isinstance(file_list[0], set):
             self.remove2newdir_in_batches(file_list, self.delete_dir_var.get())
         else:
             if self.delete_mode_var.get() == "trash":
