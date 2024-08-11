@@ -69,35 +69,39 @@ class DictEditor:
 
         # 右侧功能按钮栏
         self.button_frame = ttk.Frame(self.main_frame)
-        self.button_frame.pack(side=tk.RIGHT, anchor=tk.N)
-        self.add_button = ttk.Button(self.button_frame, text="Add(Ctrl+A)", command=self.add_item)
-        self.add_button.pack(side=tk.TOP, padx=5, pady=5)
-        self.delete_button = ttk.Button(self.button_frame, text="Delete(Del)", command=self.delete_selected)
-        self.delete_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.button_frame.pack(side=tk.RIGHT, anchor=tk.N, padx=5)
+        self.add_button = ttk.Button(self.button_frame, text="Add (Ctrl+A)", command=self.add_item)
+        self.add_button.pack(side=tk.TOP, padx=5, pady=2)
+        self.delete_button = ttk.Button(self.button_frame, text="Delete (Del)", command=self.delete_selected)
+        self.delete_button.pack(side=tk.TOP, padx=5, pady=2)
         self.move_up_button = ttk.Button(
             self.button_frame, text="Move up", command=lambda x="up": self.move_item(x))
-        self.move_up_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.move_up_button.pack(side=tk.TOP, padx=5, pady=2)
         self.move_down_button = ttk.Button(
             self.button_frame, text="Move down", command=lambda x="down": self.move_item(x))
-        self.move_down_button.pack(side=tk.TOP, padx=5, pady=5)
-        self.edit_button = ttk.Button(self.button_frame, text="Edit(Ctrl+E)", command=self.edit_item)
-        self.edit_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.move_down_button.pack(side=tk.TOP, padx=5, pady=2)
+        self.edit_button = ttk.Button(self.button_frame, text="Edit (Ctrl+E)", command=self.edit_item)
+        self.edit_button.pack(side=tk.TOP, padx=5, pady=2)
         self.clear_button = ttk.Button(self.button_frame, text="Clear", command=self.clear_list)
-        self.clear_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.clear_button.pack(side=tk.TOP, padx=5, pady=2)
         self.read_saved_button = ttk.Button(
-            self.button_frame, text="Read saved(Ctrl+R)", command=self.read_saved_dict)
-        self.read_saved_button.pack(side=tk.TOP, padx=5, pady=5)
+            self.button_frame, text="Read saved (Ctrl+R)", command=self.read_saved_dict)
+        self.read_saved_button.pack(side=tk.TOP, padx=5, pady=2)
         self.read_default_button = ttk.Button(
-            self.button_frame, text="Read Default(Ctrl+D)", command=self.read_default_dict)
-        self.read_default_button.pack(side=tk.TOP, padx=5, pady=5)
-        self.save_button = ttk.Button(self.button_frame, text="Save(Ctrl+S)", command=self.save_dict)
-        self.save_button.pack(side=tk.TOP, padx=5, pady=5)
+            self.button_frame, text="Read Default (Ctrl+D)", command=self.read_default_dict)
+        self.read_default_button.pack(side=tk.TOP, padx=5, pady=2)
+        self.save_button = ttk.Button(self.button_frame, text="Save (Ctrl+S)", command=self.save_dict)
+        self.save_button.pack(side=tk.TOP, padx=5, pady=2)
         self.export_button = ttk.Button(
             self.button_frame, text="Export", command=lambda: self.export_dict())
-        self.export_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.export_button.pack(side=tk.TOP, padx=5, pady=2)
         self.import_button = ttk.Button(
             self.button_frame, text="Import", command=lambda: self.import_dict())
-        self.import_button.pack(side=tk.TOP, padx=5, pady=5)
+        self.import_button.pack(side=tk.TOP, padx=5, pady=2)
+        # 设置所有的功能按钮的宽度一致，文字左对齐
+        child: ttk.Button
+        for child in self.button_frame.winfo_children():
+            child.config(width=18, style='LeftAligned.TButton')
 
         # 下方状态栏
         self.status_bar = ttk.Label(master, text="Default dictionary ready.")
