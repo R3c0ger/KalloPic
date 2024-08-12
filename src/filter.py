@@ -474,6 +474,7 @@ class Filter:
         # 为每个文件夹生成不同的名称，形如aa,ab,ac...az,ba,bb...
         char = string.ascii_lowercase
         power = math.ceil(math.log(len(file_sets), len(char)))
+        power = power if power != 0 else 1
         name_iter = itertools.product(char, repeat=power)
         # 生成一个时间戳字符串作为每个文件夹名的前缀，防止重名
         stamp_num = int(strftime("%Y%m%d%H%M%S", localtime())[2:])
