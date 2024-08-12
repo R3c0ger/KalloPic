@@ -309,11 +309,13 @@ class Filter:
         os.chdir(source_dir)  # 将工作目录切换到源文件夹
 
         img_list = []
-        special_dirs = [self.delete_dir_var.get()]  # 特殊文件夹需跳过
         for root, dirs, files in os.walk(source_dir):
-            # 如果dir_abspath本身即为特殊文件夹，则不能跳过
-            if root.split('\\')[-1] in special_dirs and root != source_dir:
+            # 只检查root相对于源文件夹的路径。如果root在源文件夹下的任意特殊文件夹下，则需要跳过
+            special_dir = self.delete_dir_var.get()
+            dir_relpath = os.path.relpath(root, source_dir)
+            if special_dir in dir_relpath.split("\\"):
                 continue
+
             # 遍历当前文件夹下所有文件
             for file in files:
                 if os.path.splitext(file)[1] in Conf.IMG_SUFFIX:
