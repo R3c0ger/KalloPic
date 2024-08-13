@@ -440,6 +440,53 @@ class Filter:
             self._print_rst(str(e))
         self._print_rst(f"Removed {len(empty_dir_list)} empty directories.")
 
+    def try_rename_and_move(self, src, dest):
+        """移动文件后，若文件已存在，则重命名文件"""
+        i = 1
+        # 编写新的文件名，添加_2,_3,_4...后缀，2不行就3，以此类推，递归
+        while True:
+            i = i + 1
+            # 拆分路径
+            file_relpath, file_suffix = os.path.splitext(src)
+            file_name = os.path.basename(file_relpath)
+            file_rel_dir = os.path.dirname(file_relpath)
+            # 若文件名中已有_2,_3...后缀，且与尝试重命名次数相应，则视为重命名的后缀，去掉
+            if i != 2 and f"_{i - 1}" in file_name:
+                file_name = file_name.rsplit(f"_{i - 1}", 1)[0]
+            # 若文件就在当前目录下，就不用在文件名前加斜杠
+            if file_rel_dir:
+                file_rel_dir = file_rel_dir + "\\"
+            # Logger.debug(f"{file_rel_dir}, {file_name}, {file_suffix}")
+            new_src = f"{file_rel_dir}{file_name}_{i}{file_suffix}"
+
+            # 重命名文件
+            try:
+                os.rename(src, new_src)
+            except FileNotFoundError as e:
+                self._print_rst(str(e))
+            except PermissionError as e:
+                self._print_rst(f"Can't rename this file.\n{str(e)}")
+            except Exception as e:
+                raise e
+            # 尝试移动文件
+            try:
+                shutil.move(new_src, dest)
+            except FileNotFoundError as e:
+                self._print_rst(str(e))
+            except PermissionError as e:
+                self._print_rst(f"Can't move this file.\n{str(e)}")
+            except shutil.Error as e:
+                if "already exists" in str(e):
+                    pass  # 若文件已存在，则继续
+                else:
+                    raise e  # 若其他错误，则抛出异常
+            except Exception as e:
+                raise e
+            else:
+                return new_src  # 若移动成功，则返回新的文件路径
+            # 更新变量，继续尝试新的命名
+            src = new_src
+
     def remove2trash(self, file_list):
         """将输入的文件列表中的所有文件移动到回收站"""
         try:
@@ -460,12 +507,23 @@ class Filter:
             # 检查文件是否存在
             if not os.path.exists(file):
                 raise FileNotFoundError(errno.ENOENT, f"File not found: {file}")
-            file_fullname = os.path.basename(file)
             try:
-                shutil.move(file, os.path.join(delete_dir, file_fullname))
+                shutil.move(file, delete_dir)
+            except FileNotFoundError:
+                self._print_rst(f"{file} not found.")
+            except PermissionError as e:
+                self._print_rst(f"Can't move this file.\n{str(e)}")
+            # 如果文件已存在，则重命名文件；不是这个错误则抛出异常
+            except shutil.Error as e:
+                if "already exists" in str(e):
+                    new_file = self.try_rename_and_move(file, delete_dir)
+                    self._print_rst(f"Move {new_file}(name changed) to {delete_dir}.")
+                else:
+                    raise e
             except Exception as e:
-                self._print_rst(str(e))
-            self._print_rst(f"File {file} moved to {delete_dir}.")
+                raise e
+            else:
+                self._print_rst(f"File {file} moved to {delete_dir}.")
 
     def remove2newdir_in_batches(self, file_sets, delete_dir="$$DELETE"):
         """将文件移动到新文件夹，分批次移动文件，为每个批次创建一个文件夹"""
@@ -500,6 +558,17 @@ class Filter:
                     self._print_rst(f"Move {file} to {new_path}.")
                 except FileNotFoundError:
                     self._print_rst(f"{file} not found.")
+                except PermissionError as e:
+                    self._print_rst(f"Can't move this file.\n{str(e)}")
+                # 如果文件已存在，则重命名文件；不是这个错误则抛出异常
+                except shutil.Error as e:
+                    if "already exists" in str(e):
+                        new_file = self.try_rename_and_move(file, new_path)
+                        self._print_rst(f"Move {new_file}(name changed) to {new_path}.")
+                    else:
+                        raise e
+                except Exception as e:
+                    raise e
 
     def delete(self, file_list):
         # 若file_list仅为一条字符串，则将file_list转换为列表
