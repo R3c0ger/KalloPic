@@ -166,8 +166,39 @@ class DictEditor:
 
         order = len(self.tree.get_children())
         self.tree.insert("", tk.END, values=(order, dirname, keywords_str))
+        self.tree.yview_moveto(1)  # 视图滚动到最后一行
         self.status_bar.config(text="Added successfully.")
         self.saved = False
+
+    def _adjust_treeview_position(self, selected_items, opr):
+        """
+        调整Treeview显示的位置
+
+        上移时，如果最上面一个选中的行超出了视图范围，则将视图滚动到最上面一个选中的行
+        下移时，如果最下面一个选中的行超出了视图范围，则将视图滚动到最下面一个选中的行
+        上述的滚动方式均为：
+        若最上/下面的行在视图区域的上方，则将视图滚动到第一行为该行的位置；
+        若在下方，则将视图滚动到最后一行为该行的位置。
+        编辑时，所选的唯一一行若在视图外，则尽可能移动到视图中央。
+
+        :param selected_items: 选中的行
+        :param opr: 操作类型，up（上移）、down（下移）或edit（编辑）
+        """
+        oprs = ["up", "down", "edit"]
+        if opr not in oprs:
+            raise ValueError(f"Invalid operation: {opr}")
+        row_index = -1 if opr == "down" else 0
+        row_num = len(self.tree.get_children())
+        top_pos, bottom_pos = self.tree.yview()
+        changed_pos = self.tree.index(selected_items[row_index]) / row_num
+        if opr in oprs[:-1]:  # 上移下移，滚动到最上/最下
+            if changed_pos <= top_pos:
+                self.tree.yview_moveto(changed_pos)
+            elif changed_pos >= bottom_pos:
+                self.tree.yview_moveto(changed_pos - (bottom_pos - top_pos) + 1 / row_num)
+        else:  # 编辑，移动到居中位置
+            if changed_pos <= top_pos or changed_pos >= bottom_pos:
+                self.tree.yview_moveto(changed_pos - (bottom_pos - top_pos) / 2)
 
     def _refresh_order(self):
         """重新排列Order列的值"""
@@ -205,6 +236,8 @@ class DictEditor:
                 if next_item and next_item not in selected_items:
                     self.tree.move(item, self.tree.parent(next_item), self.tree.index(next_item))
 
+        # 上（下）移时，如果最上（下）面一个选中的行超出了视图范围，则将视图滚动到最上（下）面一个选中的行
+        self._adjust_treeview_position(selected_items, direction)
         self.status_bar.config(text=f"Moved {len(selected_items)} row(s) {direction}.")
         self._refresh_order()
         self.saved = False
@@ -245,6 +278,8 @@ class DictEditor:
             return
 
         self.tree.item(item, values=(current_values[0], new_dirname, new_keywords_str))
+        # 如果被修改的行超出了视图范围，则将视图滚动到被修改的行居中的位置
+        self._adjust_treeview_position(selected_items, "edit")
         self.status_bar.config(text="The selected row has been edited.")
         self.saved = False
 
