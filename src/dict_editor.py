@@ -75,14 +75,14 @@ class DictEditor:
         self.delete_button = ttk.Button(self.button_frame, text="Delete (Del)", command=self.delete_selected)
         self.delete_button.pack(side=tk.TOP, padx=5, pady=2)
         self.move_up_button = ttk.Button(
-            self.button_frame, text="Move up", command=lambda x="up": self.move_item(x))
+            self.button_frame, text="Move up (Alt+W)", command=lambda x="up": self.move_item(x))
         self.move_up_button.pack(side=tk.TOP, padx=5, pady=2)
         self.move_down_button = ttk.Button(
-            self.button_frame, text="Move down", command=lambda x="down": self.move_item(x))
+            self.button_frame, text="Move down (Alt+S)", command=lambda x="down": self.move_item(x))
         self.move_down_button.pack(side=tk.TOP, padx=5, pady=2)
         self.edit_button = ttk.Button(self.button_frame, text="Edit (Ctrl+E)", command=self.edit_item)
         self.edit_button.pack(side=tk.TOP, padx=5, pady=2)
-        self.clear_button = ttk.Button(self.button_frame, text="Clear", command=self.clear_list)
+        self.clear_button = ttk.Button(self.button_frame, text="Clear (Alt+C)", command=self.clear_list)
         self.clear_button.pack(side=tk.TOP, padx=5, pady=2)
         self.read_saved_button = ttk.Button(
             self.button_frame, text="Read saved (Ctrl+R)", command=self.read_saved_dict)
@@ -93,10 +93,10 @@ class DictEditor:
         self.save_button = ttk.Button(self.button_frame, text="Save (Ctrl+S)", command=self.save_dict)
         self.save_button.pack(side=tk.TOP, padx=5, pady=2)
         self.export_button = ttk.Button(
-            self.button_frame, text="Export", command=lambda: self.export_dict())
+            self.button_frame, text="Export (Alt+E)", command=lambda: self.export_dict())
         self.export_button.pack(side=tk.TOP, padx=5, pady=2)
         self.import_button = ttk.Button(
-            self.button_frame, text="Import", command=lambda: self.import_dict())
+            self.button_frame, text="Import (Alt+I)", command=lambda: self.import_dict())
         self.import_button.pack(side=tk.TOP, padx=5, pady=2)
         # 设置所有的功能按钮的宽度一致，文字左对齐
         child: ttk.Button
@@ -108,13 +108,18 @@ class DictEditor:
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X, padx=5, pady=5)
 
         # 快捷键
+        self.tree.bind("<Double-1>", lambda e: self.edit_item())
         self.master.bind("<Delete>", lambda e: self.delete_selected())
-        self.master.bind("<Double-1>", lambda e: self.edit_item())
         self.master.bind("<Control-a>", lambda e: self.add_item())
         self.master.bind("<Control-s>", lambda e: self.save_dict())
         self.master.bind("<Control-e>", lambda e: self.edit_item())
         self.master.bind("<Control-r>", lambda e: self.read_saved_dict())
         self.master.bind("<Control-d>", lambda e: self.read_default_dict())
+        self.master.bind("<Alt-w>", lambda e: self.move_item("up"))
+        self.master.bind("<Alt-s>", lambda e: self.move_item("down"))
+        self.master.bind("<Alt-c>", lambda e: self.clear_list())
+        self.master.bind("<Alt-e>", lambda e: self.export_dict())
+        self.master.bind("<Alt-i>", lambda e: self.import_dict())
 
         # 读取所存储的字典
         self.read_saved_dict()
