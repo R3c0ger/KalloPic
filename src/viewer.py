@@ -796,6 +796,8 @@ class ImageViewer:
             return
         self.img_paths.reverse()
         self.load_img()
+        # 仍显示倒序前的图片
+        self.goto_img(len(self.img_paths) - self.current_index)
 
     def show_info_text(self):
         self.canvas.delete(self.text_tag)
