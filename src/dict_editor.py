@@ -186,6 +186,9 @@ class DictEditor:
         self.saved = False
 
     def move_item(self, direction):
+        directions = ["up", "down"]
+        if direction not in directions:
+            raise ValueError(f"Invalid direction: {direction}")
         selected_items = self.tree.selection()
         if not selected_items:
             self.status_bar.config(text="Please select the row(s) to move.")
