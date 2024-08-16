@@ -341,7 +341,6 @@ class ImageViewer:
         self.rotate_menu.add_command(label="Flip Horizontal", command=lambda: self.flip_img("h"))
         self.rotate_menu.add_command(label="Flip Vertical", command=lambda: self.flip_img("v"))
         self.context_menu.add_checkbutton(label="Invert Colors", command=self.invert_img)  # 反色
-        # TODO: (PIL)OSError: not supported for mode RGBA
         # 5. 排序
         self.sort_menu = tk.Menu(self.context_menu, tearoff=0)
         self.context_menu.add_cascade(label="Sort Images", menu=self.sort_menu)
@@ -899,6 +898,8 @@ class ImageViewer:
     def invert_img(self):
         """反色"""
         if self.img_pil:
+            if self.img_pil.mode == "RGBA":
+                self.img_pil = self.img_pil.convert("RGB")
             self.img_pil = ImageOps.invert(self.img_pil)
             self.draw_img(self.img_pil)
 
