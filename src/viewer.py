@@ -106,6 +106,7 @@ class ImageViewer:
         self.strech_small = False  # 是否拉伸小图
         self.img_tag = "img"  # 图片标签
         self.drag_data = {"x": 0, "y": 0}  # 拖动数据
+        self.invert_color_flag = False  # 反色标志
         # 图片信息展示
         self.show_info = False  # 是否显示图片信息
         self.info_str = ""  # 图片信息字符串
@@ -340,7 +341,7 @@ class ImageViewer:
         self.rotate_menu.add_separator()
         self.rotate_menu.add_command(label="Flip Horizontal", command=lambda: self.flip_img("h"))
         self.rotate_menu.add_command(label="Flip Vertical", command=lambda: self.flip_img("v"))
-        self.context_menu.add_checkbutton(label="Invert Colors", command=self.invert_img)  # 反色
+        self.context_menu.add_checkbutton(label="Invert Color", command=self.invert_color)  # 反色
         # 5. 排序
         self.sort_menu = tk.Menu(self.context_menu, tearoff=0)
         self.context_menu.add_cascade(label="Sort Images", menu=self.sort_menu)
@@ -661,14 +662,38 @@ class ImageViewer:
         else:
             return img
 
+    def invert_img(self, img):
+        """对指定图片进行反色"""
+        if self.invert_color_flag:
+            if img.mode == 'RGBA' or img.mode == 'LA':
+                # 如果图片有透明通道，则分离通道后再反色合并
+                channels = img.split()
+                inverted_channels = [ImageOps.invert(c) for c in channels[:-1]]
+                img = Image.merge(img.mode, tuple(inverted_channels + [channels[-1]]))
+            elif img.mode == 'P':
+                # 如果是调色板图像，先转为RGB再反色再转回来
+                img = img.convert('RGB')
+                img = ImageOps.invert(img)
+                img = img.convert('P', colors=256)
+            else:
+                # 其他模式直接反色
+                try:
+                    img = ImageOps.invert(img)
+                except Exception as e:
+                    self.status_bar.config(
+                        text=f"Failed to invert the color due to {e}")
+        return img
+
     def draw_img(self, img):
         """在画布上绘制图片，同时绘制图片信息文本"""
         # 根据图片显示模式调整图片大小，保存在属性中
         img = self.resize_img(img, self.fit_mode, self.strech_small)
-        self.img_in_canvas = ImageTk.PhotoImage(img)
+        # 反色
+        img = self.invert_img(img)
         # 清除已有图片和文本
         self.canvas.delete(tk.ALL)
         # 绘制新图片，居中显示
+        self.img_in_canvas = ImageTk.PhotoImage(img)
         canvas_w, canvas_h = self.canvas.winfo_width(), self.canvas.winfo_height()
         self.canvas.create_image(
             canvas_w // 2, canvas_h // 2,
@@ -895,12 +920,10 @@ class ImageViewer:
                 self.img_pil = self.img_pil.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
             self.draw_img(self.img_pil)
 
-    def invert_img(self):
+    def invert_color(self):
         """反色"""
+        self.invert_color_flag = not self.invert_color_flag
         if self.img_pil:
-            if self.img_pil.mode == "RGBA":
-                self.img_pil = self.img_pil.convert("RGB")
-            self.img_pil = ImageOps.invert(self.img_pil)
             self.draw_img(self.img_pil)
 
     def maximize_restore(self):
