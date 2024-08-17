@@ -1,6 +1,6 @@
 <!--suppress ALL -->
 <div align="center">
-    <img src="../resources/logo/logo_256.png" alt="logo_256" style="height: 120px" />
+    <img src="resources/logo/logo_256.png" alt="logo_256" style="height: 120px" />
 	<h1 style="padding-bottom: .3em !important; border-bottom: 1.5px solid #d0d7deb3 !important;">KalloPic</h1>
 </div>
 
@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-    <img src="https://img.shields.io/badge/version-v0.3.0-brightgreen" alt="version">
+    <img src="https://img.shields.io/badge/version-v0.4.0-brightgreen" alt="version">
     <a href="https://opensource.org/licenses/MIT">
         <img src="https://img.shields.io/badge/license-MIT-blue" alt="license">
     </a>
@@ -21,5 +21,5 @@
 </p>
 
 <p align="center">
-    <a href="../README.md">English</a> | 中文
+    <a href="README.md">English</a> | 中文
 </p>
