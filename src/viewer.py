@@ -789,6 +789,8 @@ class ImageViewer:
         if len(self.img_paths) == 0:
             return
         img_relpath = self.img_paths[self.current_index]
+        # 清除图像对象，防止删除GIF图片时出现 “另一个程序正在使用此文件” 的错误
+        self.img_pil = None
         try:
             # 将图片移动到回收站
             send2trash.send2trash(img_relpath)
@@ -799,7 +801,7 @@ class ImageViewer:
                 self.current_index -= 1
             self.load_img()
         except Exception as e:
-            self.status_bar.config(text=f"Error: {e}, failed to delete {img_relpath}")
+            self.status_bar.config(text=f"Failed to delete {img_relpath} due to {e}")
 
     def goto_img(self, index):
         if len(self.img_paths) == 0:
