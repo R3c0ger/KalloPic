@@ -94,7 +94,7 @@ class ImageViewer:
     def __init__(self, master):
         # 根窗口及其标题
         self.master = master
-        self.root_title = self.master.title().split(" - ")[0]
+        self.root_title = Conf.PROJECT_NAME
         # 打开的图片所在文件夹，所选源文件夹
         self.img_dir = ""  # 源文件夹路径
         self.img_paths = []  # 源文件夹中搜集到的图片列表
