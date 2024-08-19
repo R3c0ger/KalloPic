@@ -451,7 +451,7 @@ class ImageViewer:
     def pre_execute(self):
         """预执行的绑定事件"""
         self.bind_events_about_canvas()
-        self.bind_shortcuts()
+        self.bind_hotkeys()
         self.bind_help_tips()
 
     def bind_events_about_canvas(self):
@@ -477,7 +477,7 @@ class ImageViewer:
         self.drag_data["x"] = event.x
         self.drag_data["y"] = event.y
 
-    def bind_shortcuts(self):
+    def bind_hotkeys(self):
         """绑定快捷键"""
         self.master.bind("<Left>", lambda event: self.show_prev_img())
         self.master.bind("<Right>", lambda event: self.show_next_img())

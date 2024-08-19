@@ -26,11 +26,11 @@ def get_closest_match(input_str):
 
     # 创建一个优先队列来保存最接近的前n个字符串
     closest_matches = []
-    for name, shortcuts in Conf.DIR_KEYWORD_MAP.items():
+    for name, keywords in Conf.DIR_KEYWORD_MAP.items():
         # 先按相似度排序，再按优先级排序，取有序字典顺序作为优先级
         priority = list(Conf.DIR_KEYWORD_MAP.keys()).index(name)
-        for shortcut in shortcuts:
-            sim = similarity(input_str, shortcut)
+        for keyword in keywords:
+            sim = similarity(input_str, keyword)
             if sim == 0:
                 continue
             if len(closest_matches) < 7:
@@ -111,7 +111,7 @@ class Archiver(ImageViewer):
         self.master.bind("<Control-t>", lambda event: self.tgt_browse_dir())
         self.master.bind("<Control-p>", lambda event: self.tgt_option_menu.focus())
         self.master.bind("<Control-a>", lambda event: self.tgt_move_button.invoke())
-        self.master.bind("<Escape>", self.input_shortcut)
+        self.master.bind("<Escape>", self.input_keyword)
         self.master.bind("<F9>", self.open_filter_window)
         self.master.bind("<F10>", self.open_config_window)
 
@@ -140,7 +140,7 @@ class Archiver(ImageViewer):
         sorted_words = sorted(zip(pinyin_list, self.chara_list), key=lambda x: x[0])
         self.chara_list = [word for _, word in sorted_words]
 
-    def input_shortcut(self, _=None):
+    def input_keyword(self, _=None):
         # 如果没打开快捷移动输入框，则打开
         if self.input_box is None:
             self.input_box = ttk.Entry(self.canvas)

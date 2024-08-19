@@ -311,7 +311,7 @@ class DictEditor:
         Conf.DIR_KEYWORD_MAP = dir_keyword_map
         self.status_bar.config(text="Dictionary saved successfully.")
 
-    def export_dict(self, filename="DirnameShortcut"):
+    def export_dict(self, filename="Dirname-Keyword"):
         """导出ini文件到当前目录"""
         # 根据是否保存，以及用户的选择来决定导出的字典
         dictionary = Conf.DIR_KEYWORD_MAP
@@ -353,7 +353,7 @@ class DictEditor:
             return
         self.status_bar.config(text="Exported successfully.")
 
-    def import_dict(self, filename="DirnameShortcut"):
+    def import_dict(self, filename="Dirname-Keyword"):
         """从ini文件导入"""
         # 打开窗口让用户选择文件，默认位置为当前目录
         ini_path = filedialog.askopenfilename(
