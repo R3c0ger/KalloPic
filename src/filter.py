@@ -299,7 +299,7 @@ class Filter:
         Logger.debug(rst_str)
         return rst_str
 
-    def _collect_img(self, source_dir=None):
+    def _collect_img(self, source_dir=None, omit_special_dir=True):
         """
         收集图片。返回图片列表，包含所有图片的相对于target的路径
 
@@ -310,11 +310,13 @@ class Filter:
 
         img_list = []
         for root, dirs, files in os.walk(source_dir):
-            # 只检查root相对于源文件夹的路径。如果root在源文件夹下的任意特殊文件夹下，则需要跳过
-            special_dir = self.delete_dir_var.get()
-            dir_relpath = os.path.relpath(root, source_dir)
-            if special_dir in dir_relpath.split("\\"):
-                continue
+            # 过滤时需要忽略特殊文件夹，提取/移动时不需要
+            if omit_special_dir:
+                # 只检查root相对于源文件夹的路径。如果root在源文件夹下的任意特殊文件夹下，则需要跳过
+                special_dir = self.delete_dir_var.get()
+                dir_relpath = os.path.relpath(root, source_dir)
+                if special_dir in dir_relpath.split("\\"):
+                    continue
 
             # 遍历当前文件夹下所有文件
             for file in files:
@@ -374,7 +376,7 @@ class Filter:
             raise ValueError("Invalid source or destination directory.")
 
         self.result_box.delete(1.0, tk.END)
-        img_list = self._collect_img(source_abspath)
+        img_list = self._collect_img(source_abspath, omit_special_dir=False)
         self._print_rst(f"Moving images from {source_abspath} to {dest_abspath}...")
         for img in img_list:
             img_name = img.split('\\')[-1]
