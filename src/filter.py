@@ -61,7 +61,7 @@ class Filter:
         # 初始化窗口
         self.title = "Filter"
         self.master.title(f"{self.title} - {self.dir_abspath}")
-        self.master.geometry("1000x725")
+        self.master.geometry("1050x725")
         self.master.resizable(False, False)
 
         # 统计信息

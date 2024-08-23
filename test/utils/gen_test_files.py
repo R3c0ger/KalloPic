@@ -5,15 +5,16 @@
 图片内容使用词云随机生成。
 """
 
-from typing import List
-from random import shuffle
-from wordcloud import WordCloud
-import imageio.v3 as iio
 import os
+from random import shuffle
+from typing import List
+
+import imageio.v3 as iio
+from wordcloud import WordCloud
 
 
 Abspath = "test/"
-DeleteDir = "$DELETE/"
+DeleteDir = "$$DELETE/"
 
 
 def gen_wordcloud(
