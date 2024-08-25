@@ -22,7 +22,7 @@ class Config:
     # Metadata
     PROJECT_NAME = "KalloPic"
     PROJECT_NAME_LOWER = PROJECT_NAME.lower()
-    VERSION = "0.4.0"
+    VERSION = "0.5.0"
     AUTHOR = "Recogeta"
     DESCRIPTION = "Folder-based picture viewer, filter and archiver."
     URL = 'https://github.com/R3c0ger/KalloPic'
