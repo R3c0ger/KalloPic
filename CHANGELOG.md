@@ -1,4 +1,4 @@
-## 0.5.0 - 2024-0
+## 0.5.0 - 2024-08-25
 
 - Fixed the invert color function
 - Fixed an issue with the delete function when deleting GIF files
